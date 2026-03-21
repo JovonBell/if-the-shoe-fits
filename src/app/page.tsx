@@ -23,6 +23,7 @@ export default function Home() {
   const [capturedImageData, setCapturedImageData] = useState<ImageData | null>(null)
   const [cameraError, setCameraError] = useState<{ code: string; message: string } | null>(null)
   const [workerReady, setWorkerReady] = useState(false)
+  const [formSubmitted, setFormSubmitted] = useState(false)
 
   const bridgeRef = useRef<CVWorkerBridge | null>(null)
   const { videoRef, startCamera, capturePhoto, stopCamera } = useCamera()
@@ -185,6 +186,8 @@ export default function Home() {
             latestResult={latestResult}
             capturedImageData={capturedImageData}
             onScanOtherFoot={handleScanOtherFoot}
+            formSubmitted={formSubmitted}
+            onFormSubmitSuccess={() => setFormSubmitted(true)}
           />
         )}
       </div>
