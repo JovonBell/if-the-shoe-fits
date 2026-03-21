@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ScanTable } from '@/components/admin/ScanTable'
+import { InviteForm } from '@/components/admin/InviteForm'
 
 interface Scan {
   id: string
@@ -63,6 +64,11 @@ export function AdminDashboard({ initialScans }: Props) {
         onStatusChange={handleStatusChange}
         onDownloadSTL={handleDownloadSTL}
       />
+
+      {/* Team management */}
+      <div className="mt-8">
+        <InviteForm />
+      </div>
     </div>
   )
 }
