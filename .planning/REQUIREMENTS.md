@@ -9,12 +9,12 @@
 
 - [x] **SCAN-01**: User can capture foot photo using phone camera via getUserMedia (iOS Safari + Android Chrome)
 - [x] **SCAN-02**: App detects A4 paper reference object and calibrates pixel-to-mm conversion (210mm x 297mm)
-- [ ] **SCAN-03**: App extracts foot contour using OpenCV.js (HSV conversion, Gaussian blur, segmentation, Canny edge detection)
-- [ ] **SCAN-04**: App calculates foot length from contour against calibrated reference
-- [ ] **SCAN-05**: App calculates foot width from contour at widest point
-- [ ] **SCAN-06**: App calculates arch length from contour geometry
-- [ ] **SCAN-07**: App calculates toe box width from contour near hallux region
-- [ ] **SCAN-08**: App calculates heel width from contour at heel region
+- [x] **SCAN-03**: App extracts foot contour using OpenCV.js (HSV conversion, Gaussian blur, segmentation, Canny edge detection)
+- [x] **SCAN-04**: App calculates foot length from contour against calibrated reference
+- [x] **SCAN-05**: App calculates foot width from contour at widest point
+- [x] **SCAN-06**: App calculates arch length from contour geometry
+- [x] **SCAN-07**: App calculates toe box width from contour near hallux region
+- [x] **SCAN-08**: App calculates heel width from contour at heel region
 - [x] **SCAN-09**: User can capture left foot and right foot separately (two scans)
 - [x] **SCAN-10**: App displays accuracy confidence indicator after calibration ("±Xmm accuracy")
 - [x] **SCAN-11**: User can retake/retry photo before processing
@@ -99,12 +99,12 @@
 |-------------|-------|--------|
 | SCAN-01 | Phase 1 | Complete |
 | SCAN-02 | Phase 1 | Complete |
-| SCAN-03 | Phase 1 | Pending |
-| SCAN-04 | Phase 1 | Pending |
-| SCAN-05 | Phase 1 | Pending |
-| SCAN-06 | Phase 1 | Pending |
-| SCAN-07 | Phase 1 | Pending |
-| SCAN-08 | Phase 1 | Pending |
+| SCAN-03 | Phase 1 | Complete |
+| SCAN-04 | Phase 1 | Complete |
+| SCAN-05 | Phase 1 | Complete |
+| SCAN-06 | Phase 1 | Complete |
+| SCAN-07 | Phase 1 | Complete |
+| SCAN-08 | Phase 1 | Complete |
 | SCAN-09 | Phase 1 | Complete |
 | SCAN-10 | Phase 1 | Complete |
 | SCAN-11 | Phase 1 | Complete |

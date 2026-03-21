@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-cv-pipeline-03-PLAN.md
-last_updated: "2026-03-21T08:16:33.998Z"
+stopped_at: Completed 01-cv-pipeline-04-PLAN.md
+last_updated: "2026-03-21T08:17:15.085Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -49,6 +49,7 @@ Plan: 3 of 6
 | Phase 01-cv-pipeline P01 | 4 min | 2 tasks | 21 files |
 | Phase 01-cv-pipeline P02 | 12 min | 2 tasks | 5 files |
 | Phase 01-cv-pipeline P03 | 4 min | 1 task | 3 files |
+| Phase 01-cv-pipeline P04 | 104 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,7 @@ Recent decisions affecting current work:
 - [Phase 01-cv-pipeline]: detectA4Corners receives cv as parameter to avoid Worker/main-thread coupling
 - [Phase 01-cv-pipeline]: detectA4Corners returns null (not throws) when no A4 quad found — caller handles error
 - [Phase 01-cv-pipeline]: SCALE=2 hardcoded — output always 420x594px, pixelsPerMm=2 is invariant
+- [Phase 01-cv-pipeline]: extractMeasurements is pure JS with zero OpenCV dependency — testable without WASM
 
 ### Pending Todos
 
@@ -82,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T08:15:00.000Z
-Stopped at: Completed 01-cv-pipeline-03-PLAN.md
+Last session: 2026-03-21T08:17:15.083Z
+Stopped at: Completed 01-cv-pipeline-04-PLAN.md
 Resume file: None
