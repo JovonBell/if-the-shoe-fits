@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-21T21:01:01.877Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-21T21:03:34.784Z"
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # Project State
@@ -64,6 +64,7 @@ Plan: 1 of 2
 | Phase 03-data-leads-manufacturer-portal P04 | 2 | 2 tasks | 5 files |
 | Phase 03-data-leads-manufacturer-portal P05 | 5 | 1 tasks | 1 files |
 | Phase 04-deployment-shopify-embed P01 | 5 | 2 tasks | 2 files |
+| Phase 04-deployment-shopify-embed P02 | 5 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,7 @@ Recent decisions affecting current work:
 - [Phase 03-data-leads-manufacturer-portal P05]: Worker URL uses relative path (../../workers/...) not absolute — Turbopack production bundler requires relative new URL() paths for Web Worker construction
 - [Phase 04-deployment-shopify-embed]: Permissions-Policy: camera=* (not camera=(self)) — allows camera in cross-origin iframes from any embedding origin
 - [Phase 04-deployment-shopify-embed]: Belt-and-suspenders headers: vercel.json for Vercel CDN edge, next.config.ts headers() for next start/dev parity
+- [Phase 04-deployment-shopify-embed]: allow=camera * with asterisk required for cross-origin iframe camera delegation
 
 ### Pending Todos
 
@@ -129,6 +131,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T21:00:57.036Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-21T21:03:34.782Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

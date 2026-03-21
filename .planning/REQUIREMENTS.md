@@ -58,7 +58,7 @@
 - [x] **DEPLOY-01**: App deployed on Vercel with HTTPS (required for camera API)
 - [x] **DEPLOY-02**: Standalone web app works at dedicated URL (e.g., scan.iftheshoefits.co)
 - [x] **DEPLOY-03**: Embeddable iframe version works inside Shopify storefront with allow="camera"
-- [ ] **DEPLOY-04**: Shopify Custom Liquid section snippet provided for easy embedding
+- [x] **DEPLOY-04**: Shopify Custom Liquid section snippet provided for easy embedding
 
 ## v2 Requirements
 
@@ -133,7 +133,7 @@
 | DEPLOY-01 | Phase 4 | Complete |
 | DEPLOY-02 | Phase 4 | Complete |
 | DEPLOY-03 | Phase 4 | Complete |
-| DEPLOY-04 | Phase 4 | Pending |
+| DEPLOY-04 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 37 total (REQUIREMENTS.md header stated 30; actual count is 37 across all 6 categories)
