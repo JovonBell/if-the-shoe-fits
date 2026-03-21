@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+@theme {
+  --color-maroon:     #850321;
+  --color-cream:      #fffaef;
+  --color-cream-dark: #f5ede0;
+  --color-dark:       #1a1a1a;
+  --color-destructive: #b91c1c;
+
+  --font-heading: var(--font-figtree), sans-serif;
+  --font-body:    var(--font-poppins), sans-serif;
+}
