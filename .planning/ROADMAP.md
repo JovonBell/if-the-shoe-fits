@@ -2,7 +2,7 @@
 
 ## Overview
 
-Four phases deliver a browser-based foot scanning tool for Jolie Wyatt's custom footwear business. The CV pipeline is built first because everything depends on accurate measurements. Once the pipeline is proven, the full scan UX and 3D results display layer on top. The data persistence, lead capture, and manufacturer portal ship together as the business backend. Shopify embed and deployment finalize the integration. Phases 1-3 deliver a complete, shippable product; Phase 4 puts it in front of Jolie's customers on her existing storefront.
+Four phases deliver a browser-based foot scanning tool for Jolie Wyatt's custom footwear business. The CV pipeline is built first because everything depends on accurate measurements. Once the pipeline is proven, the full scan UX and 3D results display layer on top. The data persistence, lead capture, and manufacturer portal ship together as the business backend. Shopline embed and deployment finalize the integration. Phases 1-3 deliver a complete, shippable product; Phase 4 puts it in front of Jolie's customers on her existing storefront.
 
 ## Phases
 
@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: CV Pipeline** - Working OpenCV.js worker that accepts a foot-on-A4 photo and returns accurate measurements in millimeters (completed 2026-03-21)
 - [x] **Phase 2: Scan UX + 3D Results** - Complete user-facing scan flow from camera capture through 3D model display (completed 2026-03-21)
 - [x] **Phase 3: Data, Leads + Manufacturer Portal** - Lead persistence, size recommendation, and Jolie's admin portal for managing customer records (completed 2026-03-21)
-- [ ] **Phase 4: Deployment + Shopify Embed** - Ship to Vercel at a dedicated URL and embed on the Shopify storefront
+- [ ] **Phase 4: Deployment + Shopline Embed** - Ship to Vercel at a dedicated URL and embed on Jolie's Shopline storefront
 
 ## Phase Details
 
@@ -71,22 +71,26 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 03-00-PLAN.md — Wave 0: Create 9 test stub files for Phase 3 TDD foundation
-- [ ] 03-01-PLAN.md — Supabase foundation (client utilities, middleware, DB schema SQL) + STL export + Zod schemas
-- [ ] 03-02-PLAN.md — Lead capture form + API routes (stl-upload, leads) + ResultsStep/page.tsx integration
-- [ ] 03-03-PLAN.md — Admin auth (magic link login, callback, layout guard) + dashboard with ScanTable
-- [ ] 03-04-PLAN.md — Admin actions: status update, STL download, cobbler invite API routes + InviteForm
-- [ ] 03-05-PLAN.md — Pre-flight build verification + human verification of all Phase 3 flows
+- [x] 03-00-PLAN.md — Wave 0: Create 9 test stub files for Phase 3 TDD foundation
+- [x] 03-01-PLAN.md — Supabase foundation (client utilities, middleware, DB schema SQL) + STL export + Zod schemas
+- [x] 03-02-PLAN.md — Lead capture form + API routes (stl-upload, leads) + ResultsStep/page.tsx integration
+- [x] 03-03-PLAN.md — Admin auth (magic link login, callback, layout guard) + dashboard with ScanTable
+- [x] 03-04-PLAN.md — Admin actions: status update, STL download, cobbler invite API routes + InviteForm
+- [x] 03-05-PLAN.md — Pre-flight build verification + human verification of all Phase 3 flows
 
-### Phase 4: Deployment + Shopify Embed
-**Goal**: The scanner is live at a dedicated HTTPS URL and embeddable inside Jolie's Shopify storefront with camera permission working in the iframe context
+### Phase 4: Deployment + Shopline Embed
+**Goal**: The scanner is live at a dedicated HTTPS URL and embeddable inside Jolie's Shopline storefront with camera permission working in the iframe context
 **Depends on**: Phase 3
 **Requirements**: DEPLOY-01, DEPLOY-02, DEPLOY-03, DEPLOY-04
 **Success Criteria** (what must be TRUE):
-  1. The standalone scanner app is accessible at a public HTTPS URL (e.g., scan.iftheshoefits.co) with camera permission granted automatically on iOS Safari and Android Chrome
-  2. The scanner works as an embedded iframe on the Shopify storefront — camera permission is not blocked by the cross-origin iframe context
-  3. Jolie can paste a provided Liquid snippet into her Shopify theme and the scanner appears without additional configuration
-**Plans**: TBD
+  1. The standalone scanner app is accessible at a public HTTPS URL (scan.iftheshoefits.co) with camera permission working on iOS Safari and Android Chrome
+  2. The scanner works as an embedded iframe on Jolie's Shopline storefront — camera permission is not blocked by the cross-origin iframe context
+  3. Jolie can paste a provided HTML snippet into her Shopline theme editor (custom HTML block) and the scanner appears without additional configuration
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Vercel deployment config (vercel.json headers, next.config.ts Permissions-Policy) + build verification
+- [ ] 04-02-PLAN.md — Shopline embed snippet + deployment/DNS/integration instructions + human verification
 
 ## Progress
 
@@ -98,4 +102,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. CV Pipeline | 6/6 | Complete   | 2026-03-21 |
 | 2. Scan UX + 3D Results | 5/5 | Complete   | 2026-03-21 |
 | 3. Data, Leads + Manufacturer Portal | 6/6 | Complete   | 2026-03-21 |
-| 4. Deployment + Shopify Embed | 0/TBD | Not started | - |
+| 4. Deployment + Shopline Embed | 0/2 | Not started | - |
