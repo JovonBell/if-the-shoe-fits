@@ -24,8 +24,8 @@
 ### 3D Model Generation
 
 - [x] **3DM-01**: App generates parametric 3D foot model from extracted measurements (length, width, arch, toe box, heel)
-- [ ] **3DM-02**: 3D model displays in-browser with interactive rotation/zoom (Three.js)
-- [ ] **3DM-03**: 3D model is anatomically scaled using a template foot mesh deformed by measurements
+- [x] **3DM-02**: 3D model displays in-browser with interactive rotation/zoom (Three.js)
+- [x] **3DM-03**: 3D model is anatomically scaled using a template foot mesh deformed by measurements
 - [ ] **3DM-04**: App exports 3D foot model as downloadable STL file
 - [ ] **3DM-05**: STL file is uploaded and stored in Supabase Storage linked to customer record
 
@@ -111,8 +111,8 @@
 | SCAN-12 | Phase 1 | Complete |
 | SCAN-13 | Phase 1 | Complete |
 | 3DM-01 | Phase 2 | Complete |
-| 3DM-02 | Phase 2 | Pending |
-| 3DM-03 | Phase 2 | Pending |
+| 3DM-02 | Phase 2 | Complete |
+| 3DM-03 | Phase 2 | Complete |
 | 3DM-04 | Phase 3 | Pending |
 | 3DM-05 | Phase 3 | Pending |
 | UX-01 | Phase 2 | Pending |
