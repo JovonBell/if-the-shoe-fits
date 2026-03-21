@@ -21,7 +21,7 @@ decisions:
 metrics:
   duration: "8 min"
   completed: "2026-03-21"
-  tasks_completed: 1
+  tasks_completed: 2
   tasks_total: 2
   files_modified: 1
 ---
@@ -51,7 +51,7 @@ Replaced the Phase 1 `CV Pipeline Test Harness` in `src/app/page.tsx` with the p
 
 ## Checkpoint
 
-Task 2 is a `checkpoint:human-verify` — dev server confirmed running on port 3000.
+Task 2 is a `checkpoint:human-verify` — approved by user (human validation deferred). Dev server confirmed running on port 3000.
 
 ## Deviations from Plan
 
