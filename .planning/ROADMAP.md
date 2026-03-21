@@ -80,7 +80,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. CV Pipeline | 1/6 | In Progress|  |
+| 1. CV Pipeline | 2/6 | In Progress|  |
 | 2. Scan UX + 3D Results | 0/TBD | Not started | - |
 | 3. Data, Leads + Manufacturer Portal | 0/TBD | Not started | - |
 | 4. Deployment + Shopify Embed | 0/TBD | Not started | - |

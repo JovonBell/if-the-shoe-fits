@@ -18,7 +18,7 @@
 - [x] **SCAN-09**: User can capture left foot and right foot separately (two scans)
 - [ ] **SCAN-10**: App displays accuracy confidence indicator after calibration ("±Xmm accuracy")
 - [x] **SCAN-11**: User can retake/retry photo before processing
-- [ ] **SCAN-12**: App normalizes EXIF rotation before processing (prevents Android measurement corruption)
+- [x] **SCAN-12**: App normalizes EXIF rotation before processing (prevents Android measurement corruption)
 - [x] **SCAN-13**: App runs OpenCV.js in Web Worker (prevents UI freeze on mobile)
 
 ### 3D Model Generation
@@ -108,7 +108,7 @@
 | SCAN-09 | Phase 1 | Complete |
 | SCAN-10 | Phase 1 | Pending |
 | SCAN-11 | Phase 1 | Complete |
-| SCAN-12 | Phase 1 | Pending |
+| SCAN-12 | Phase 1 | Complete |
 | SCAN-13 | Phase 1 | Complete |
 | 3DM-01 | Phase 2 | Pending |
 | 3DM-02 | Phase 2 | Pending |
