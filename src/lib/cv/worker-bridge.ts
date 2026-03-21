@@ -11,10 +11,11 @@ export class CVWorkerBridge {
   private ready = false
 
   constructor() {
-    // Note: Turbopack may require `next dev --webpack` if Worker URL resolution fails
-    // See 01-RESEARCH.md Open Question 3
+    // Use a relative path so Turbopack can resolve the worker module during both
+    // dev and production builds. Absolute paths (/workers/...) are not supported
+    // by Turbopack's production bundler for new URL() worker construction.
     this.worker = new Worker(
-      new URL('/workers/opencv.worker.ts', import.meta.url),
+      new URL('../../workers/opencv.worker.ts', import.meta.url),
       { type: 'module' }
     )
 
