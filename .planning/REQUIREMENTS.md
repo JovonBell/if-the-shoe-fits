@@ -97,13 +97,49 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| *(populated during roadmap creation)* | | |
+| SCAN-01 | Phase 1 | Pending |
+| SCAN-02 | Phase 1 | Pending |
+| SCAN-03 | Phase 1 | Pending |
+| SCAN-04 | Phase 1 | Pending |
+| SCAN-05 | Phase 1 | Pending |
+| SCAN-06 | Phase 1 | Pending |
+| SCAN-07 | Phase 1 | Pending |
+| SCAN-08 | Phase 1 | Pending |
+| SCAN-09 | Phase 1 | Pending |
+| SCAN-10 | Phase 1 | Pending |
+| SCAN-11 | Phase 1 | Pending |
+| SCAN-12 | Phase 1 | Pending |
+| SCAN-13 | Phase 1 | Pending |
+| 3DM-01 | Phase 2 | Pending |
+| 3DM-02 | Phase 2 | Pending |
+| 3DM-03 | Phase 2 | Pending |
+| 3DM-04 | Phase 3 | Pending |
+| 3DM-05 | Phase 3 | Pending |
+| UX-01 | Phase 2 | Pending |
+| UX-02 | Phase 2 | Pending |
+| UX-03 | Phase 2 | Pending |
+| UX-04 | Phase 2 | Pending |
+| UX-05 | Phase 2 | Pending |
+| UX-06 | Phase 2 | Pending |
+| UX-07 | Phase 2 | Pending |
+| LEAD-01 | Phase 3 | Pending |
+| LEAD-02 | Phase 3 | Pending |
+| LEAD-03 | Phase 3 | Pending |
+| MFR-01 | Phase 3 | Pending |
+| MFR-02 | Phase 3 | Pending |
+| MFR-03 | Phase 3 | Pending |
+| MFR-04 | Phase 3 | Pending |
+| MFR-05 | Phase 3 | Pending |
+| DEPLOY-01 | Phase 4 | Pending |
+| DEPLOY-02 | Phase 4 | Pending |
+| DEPLOY-03 | Phase 4 | Pending |
+| DEPLOY-04 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 30 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 30
+- v1 requirements: 37 total (REQUIREMENTS.md header stated 30; actual count is 37 across all 6 categories)
+- Mapped to phases: 37
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after initial definition*
+*Last updated: 2026-03-21 after roadmap creation — traceability populated*
