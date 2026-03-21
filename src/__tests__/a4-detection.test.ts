@@ -16,6 +16,16 @@ describe('A4 paper detection (SCAN-02)', () => {
     expect(mod.A4_ASPECT_RATIO).toBeCloseTo(0.707, 2)
   })
 
+  it('A4_ASPECT_RATIO is approximately 0.707', async () => {
+    const mod = await import('@/lib/cv/a4-detection')
+    expect(mod.A4_ASPECT_RATIO).toBeCloseTo(0.707, 2)
+  })
+
+  it('sortCornersClockwise is not exported (internal helper)', async () => {
+    const mod = await import('@/lib/cv/a4-detection')
+    expect((mod as any).sortCornersClockwise).toBeUndefined()
+  })
+
   it.skip('fixture missing: detects 4 corners from overhead A4 image', async () => {
     // Requires: src/__tests__/fixtures/foot-overhead-a4.jpg + OpenCV loaded
     // Expected: returns array of 4 {x, y} points, non-null

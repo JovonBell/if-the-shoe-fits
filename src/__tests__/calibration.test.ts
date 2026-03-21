@@ -11,8 +11,7 @@ describe('Calibration accuracy indicator (SCAN-10)', () => {
   })
 
   it('returns 0 accuracy error for perfect corner alignment', async () => {
-    const mod = await import('@/lib/cv/a4-detection').catch(() => null)
-    if (!mod) return // module not yet created
+    const mod = await import('@/lib/cv/a4-detection')
     const pixelsPerMm = 2
     const perfectCorners = [
       { x: 0, y: 0 },
@@ -22,6 +21,14 @@ describe('Calibration accuracy indicator (SCAN-10)', () => {
     ]
     const accuracy = mod.computeCalibrationAccuracy(perfectCorners, pixelsPerMm)
     expect(accuracy).toBe(0)
+  })
+
+  it('accuracyToConfidence maps < 2mm to high, < 5mm to medium, >= 5mm to low', async () => {
+    const mod = await import('@/lib/cv/a4-detection')
+    expect(mod.accuracyToConfidence(1.9)).toBe('high')
+    expect(mod.accuracyToConfidence(2.0)).toBe('medium')
+    expect(mod.accuracyToConfidence(4.9)).toBe('medium')
+    expect(mod.accuracyToConfidence(5.0)).toBe('low')
   })
 
   it('maps MeasurementResult.confidence as high/medium/low string union', async () => {
