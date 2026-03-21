@@ -102,4 +102,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. CV Pipeline | 6/6 | Complete   | 2026-03-21 |
 | 2. Scan UX + 3D Results | 5/5 | Complete   | 2026-03-21 |
 | 3. Data, Leads + Manufacturer Portal | 6/6 | Complete   | 2026-03-21 |
-| 4. Deployment + Shopline Embed | 0/2 | Not started | - |
+| 4. Deployment + Shopline Embed | 1/2 | In Progress|  |

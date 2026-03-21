@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Checkpoint at 03-data-leads-manufacturer-portal-05-PLAN.md (awaiting human verification)
-last_updated: "2026-03-21T17:30:45Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-21T21:01:01.877Z"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 17
-  completed_plans: 16
+  completed_phases: 3
+  total_plans: 19
+  completed_plans: 18
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Users can accurately measure their feet from their phone browser and submit their measurements + contact info for custom shoe fitting
-**Current focus:** Phase 03 — data-leads-manufacturer-portal
+**Current focus:** Phase 04 — deployment-shopify-embed
 
 ## Current Position
 
-Phase: 03 (data-leads-manufacturer-portal) — EXECUTING
-Plan: 5 of 6
+Phase: 04 (deployment-shopify-embed) — EXECUTING
+Plan: 1 of 2
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Plan: 5 of 6
 | Phase 03-data-leads-manufacturer-portal P02 | 3 | 2 tasks | 5 files |
 | Phase 03-data-leads-manufacturer-portal P04 | 2 | 2 tasks | 5 files |
 | Phase 03-data-leads-manufacturer-portal P05 | 5 | 1 tasks | 1 files |
+| Phase 04-deployment-shopify-embed P01 | 5 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,8 @@ Recent decisions affecting current work:
 - [Phase 03-data-leads-manufacturer-portal]: PATCH status route uses authenticated server client (not admin) — RLS allows authenticated UPDATE, no service_role needed
 - [Phase 03-data-leads-manufacturer-portal]: Invite route uses dual-client: server client for getUser() auth check, admin client for inviteUserByEmail() — service_role required per Supabase admin API
 - [Phase 03-data-leads-manufacturer-portal P05]: Worker URL uses relative path (../../workers/...) not absolute — Turbopack production bundler requires relative new URL() paths for Web Worker construction
+- [Phase 04-deployment-shopify-embed]: Permissions-Policy: camera=* (not camera=(self)) — allows camera in cross-origin iframes from any embedding origin
+- [Phase 04-deployment-shopify-embed]: Belt-and-suspenders headers: vercel.json for Vercel CDN edge, next.config.ts headers() for next start/dev parity
 
 ### Pending Todos
 
@@ -126,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T17:30:45Z
-Stopped at: Checkpoint at 03-data-leads-manufacturer-portal-05-PLAN.md (awaiting human verification of Phase 3 flows)
+Last session: 2026-03-21T21:00:57.036Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
