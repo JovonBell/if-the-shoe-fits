@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-data-leads-manufacturer-portal-02-PLAN.md
-last_updated: "2026-03-21T17:19:53.594Z"
+stopped_at: Completed 03-data-leads-manufacturer-portal-04-PLAN.md
+last_updated: "2026-03-21T17:24:51.948Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 17
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Plan: 2 of 6
 | Phase 03-data-leads-manufacturer-portal P01 | 3 | 2 tasks | 10 files |
 | Phase 03-data-leads-manufacturer-portal P03 | 3 | 2 tasks | 9 files |
 | Phase 03-data-leads-manufacturer-portal P02 | 3 | 2 tasks | 5 files |
+| Phase 03-data-leads-manufacturer-portal P04 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,8 @@ Recent decisions affecting current work:
 - [Phase 03-data-leads-manufacturer-portal]: Admin client (service_role) for STL upload + lead insert — no browser Supabase client needed, simpler than RLS anon INSERT
 - [Phase 03-data-leads-manufacturer-portal]: STL export runs before lead insert — prevents orphaned DB records without storage files
 - [Phase 03-data-leads-manufacturer-portal]: formSubmitted tracked as wizard sub-state in page.tsx — no redirect, no new WizardStep type, STL download gated behind form submission
+- [Phase 03-data-leads-manufacturer-portal]: PATCH status route uses authenticated server client (not admin) — RLS allows authenticated UPDATE, no service_role needed
+- [Phase 03-data-leads-manufacturer-portal]: Invite route uses dual-client: server client for getUser() auth check, admin client for inviteUserByEmail() — service_role required per Supabase admin API
 
 ### Pending Todos
 
@@ -121,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T17:19:53.592Z
-Stopped at: Completed 03-data-leads-manufacturer-portal-02-PLAN.md
+Last session: 2026-03-21T17:24:51.946Z
+Stopped at: Completed 03-data-leads-manufacturer-portal-04-PLAN.md
 Resume file: None
