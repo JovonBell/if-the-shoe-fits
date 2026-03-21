@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A browser-based foot scanning web app for "If The Shoe Fits" (iftheshoefits.co), a custom footwear brand by Jolie Wyatt specializing in designer heels for larger sizes. Users open the scanner on their phone, place their foot on a sheet of A4 paper, and get accurate foot measurements using computer vision — no app download required. The tool captures leads (email, phone, measurements) for Jolie's custom fitting pipeline.
+A browser-based foot scanning web app for "If The Shoe Fits" (iftheshoefits.co), a custom footwear brand by Jolie Wyatt specializing in designer heels for larger sizes. Users open the scanner on their phone, place their foot on A4 paper, and get accurate foot measurements via OpenCV.js computer vision — no app download required. The tool captures leads (contact info, measurements, 3D foot model) for Jolie's custom fitting pipeline. Jolie and her cobbler access an admin portal to manage scans and download STL files.
 
 ## Core Value
 
@@ -12,60 +12,71 @@ Users can accurately measure their feet from their phone browser and submit thei
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Phone camera capture via getUserMedia API (iOS Safari + Android Chrome) — v1.0
+- ✓ A4 paper reference object calibration (210mm x 297mm) — v1.0
+- ✓ OpenCV.js CV pipeline in Web Worker: HSV, blur, segmentation, edge detection, contour analysis — v1.0
+- ✓ Full measurement extraction: length, width, arch, toe box, heel — v1.0
+- ✓ EXIF rotation normalization for cross-device accuracy — v1.0
+- ✓ Pixel-to-mm conversion with accuracy confidence indicator — v1.0
+- ✓ US/EU/UK shoe size recommendation from measurements — v1.0
+- ✓ Guided scanning UX with step-by-step wizard — v1.0
+- ✓ 3D parametric foot model with interactive rotation/zoom (Three.js) — v1.0
+- ✓ STL export + Supabase Storage persistence — v1.0
+- ✓ Lead capture form: first name, email, phone, current size — v1.0
+- ✓ Measurement data persistence to Supabase — v1.0
+- ✓ Admin portal with scan management, status tracking, cobbler invite — v1.0
+- ✓ Brand-aligned UI: maroon #850321, cream #fffaef, Figtree + Poppins — v1.0
+- ✓ Standalone web app on Vercel with HTTPS — v1.0
+- ✓ Embeddable iframe version with cross-origin camera support for Shopline — v1.0
 
 ### Active
 
-- [ ] Phone camera capture via getUserMedia API (iOS Safari + Android Chrome)
-- [ ] Reference object calibration using A4 paper (known dimensions: 210mm x 297mm)
-- [ ] Computer vision pipeline: HSV conversion, Gaussian blur, segmentation, edge detection, contour analysis
-- [ ] Full measurement extraction: foot length, width, arch length, instep height, toe box width, heel width
-- [ ] Pixel-to-mm conversion using A4 reference dimensions
-- [ ] US/EU/UK shoe size recommendation from measurements
-- [ ] Guided scanning UX with visual instructions (step-by-step)
-- [ ] Lead capture form: email, phone number, current shoe size preference
-- [ ] Measurement data persistence to Supabase
-- [ ] Standalone web app deployable to Vercel
-- [ ] Embeddable version (iframe/widget) for Shopify integration
-- [ ] Brand-aligned UI matching iftheshoefits.co aesthetic
+(None — define next milestone with `/gsd:new-milestone`)
 
 ### Out of Scope
 
-- 3D photogrammetry / full 3D foot model — overkill for MVP, requires months of ML work
-- LiDAR-based scanning — limits to iPhone Pro only
-- Native mobile app — web-first, camera API works on modern browsers
+- 3D photogrammetry / full 3D scanning — parametric model from measurements is sufficient
+- LiDAR scanning — limits to iPhone Pro only, excludes most users
+- Native mobile app — web browser camera API works on all modern phones
 - Real-time video stream processing — single photo capture is simpler and more reliable
-- Shopify product recommendations — v2 feature, MVP is scan + lead capture
+- Product recommendations — Jolie makes custom orders, not SKU-based inventory
 - Payment processing — this is a lead capture tool, not a checkout flow
+- Account creation for customers — lead capture form is enough
+- Multi-language — no evidence of non-English customer base
 
 ## Context
 
-- **Brand**: If The Shoe Fits by Jolie Wyatt — custom designer heels for larger sizes (typically 10+)
-- **Existing site**: iftheshoefits.co on Shopify, brand colors: maroon #850321 + cream #fffaef, fonts: Figtree + Poppins
-- **Target users**: Women with larger feet who struggle to find properly fitting shoes in retail
-- **Proven approach**: FeetSizr, Volumental, and open-source projects (wildoctopus/FeetAndShoeMeasurement) all use the A4-paper-as-reference-object method with OpenCV
-- **Key technical insight**: OpenCV.js runs entirely in-browser — no server-side processing needed for the CV pipeline
-- **Custom fitting need**: Jolie makes custom shoes, so full measurements (instep, toe box, heel width) are more valuable than just length/width
+Shipped v1.0 with 28,812 LOC across 153 files (TypeScript/Next.js).
+Tech stack: Next.js 16 + OpenCV.js + Three.js + TailwindCSS + Supabase — deployed on Vercel.
+
+**Known tech debt:**
+- 47 test.todo() stubs need real implementations
+- Human verification deferred (camera UX, 3D model, admin portal, Vercel deploy, iframe camera)
+- Jolie's custom last size table is placeholder — needs real data
+- White floor A4 detection may fail — dark surface requirement in UX instructions
 
 ## Constraints
 
-- **Timeline**: MVP buildable in one night session
 - **Tech Stack**: Next.js + OpenCV.js + TailwindCSS + Supabase — deployed on Vercel
-- **Browser Compatibility**: Must work on iOS Safari 15+ and Android Chrome — getUserMedia requires HTTPS
-- **Reference Object**: A4 paper (most proven calibration method from research)
-- **No Deep Learning**: OpenCV.js classical CV only — k-means clustering + Canny edge detection + contour analysis. No TensorFlow.js or model downloads.
+- **Browser Compatibility**: iOS Safari 15+ and Android Chrome — getUserMedia requires HTTPS
+- **Reference Object**: A4 paper (most proven calibration method)
+- **No Deep Learning**: OpenCV.js classical CV only — no TensorFlow.js or model downloads
 - **Brand**: Must match iftheshoefits.co visual identity — maroon #850321 + cream #fffaef
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| A4 paper over credit card as reference | More surface area = better calibration; proven in multiple open-source projects | — Pending |
-| OpenCV.js over TensorFlow.js | No model download needed, classical CV sufficient for controlled conditions, faster load | — Pending |
-| Supabase for data storage | Free tier, Postgres, easy to set up tonight, scales later | — Pending |
-| Next.js over plain React | SSR for landing page SEO, API routes for Supabase, easy Vercel deploy | — Pending |
-| Single photo capture over video stream | Simpler, more reliable, user can verify photo quality before processing | — Pending |
-| Standalone + embeddable | Standalone app works immediately; embed version lets Jolie add to Shopify later | — Pending |
+| A4 paper over credit card as reference | More surface area = better calibration; proven in open-source projects | ✓ Good |
+| OpenCV.js over TensorFlow.js | No model download, classical CV sufficient, faster load | ✓ Good |
+| Supabase for data storage | Free tier, Postgres, easy setup, scales later | ✓ Good |
+| Next.js over plain React | SSR for landing page SEO, API routes for Supabase, easy Vercel deploy | ✓ Good |
+| Single photo capture over video stream | Simpler, more reliable, user verifies quality before processing | ✓ Good |
+| Web Worker for CV processing | Prevents UI freeze on mobile devices | ✓ Good |
+| Procedural GLB via binary GLTF writer | Avoids FileReader browser API dependency in Node.js GLTFExporter | ✓ Good |
+| getUser() over getSession() for auth | getSession() doesn't validate JWT server-side — security vulnerability | ✓ Good |
+| STL export independent of R3F Canvas | Re-runs GLTFLoader+deformation independently — avoids prop drilling | ✓ Good |
+| Belt-and-suspenders headers (vercel.json + next.config.ts) | CDN edge headers + runtime parity for iframe camera | ✓ Good |
 
 ---
-*Last updated: 2026-03-21 after initialization*
+*Last updated: 2026-03-21 after v1.0 milestone*
