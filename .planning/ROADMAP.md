@@ -52,11 +52,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Brand foundation (Figtree/Poppins fonts, Tailwind @theme tokens) + size lookup + mesh deformation logic with tests
-- [ ] 02-02-PLAN.md — Three.js stack install + foot GLB model sourcing + FootModel3D component with parametric deformation
-- [ ] 02-03-PLAN.md — Wizard step components: Button, StepCard, StepIndicator, InstructionsStep, CameraStep, ProcessingStep
-- [ ] 02-04-PLAN.md — Results components: ContourOverlay, MeasurementCards, SizeRecommendation, ResultsStep with 3D hero
-- [ ] 02-05-PLAN.md — Wizard state machine integration in page.tsx + human verification checkpoint
+- [x] 02-01-PLAN.md — Brand foundation (Figtree/Poppins fonts, Tailwind @theme tokens) + size lookup + mesh deformation logic with tests
+- [x] 02-02-PLAN.md — Three.js stack install + foot GLB model sourcing + FootModel3D component with parametric deformation
+- [x] 02-03-PLAN.md — Wizard step components: Button, StepCard, StepIndicator, InstructionsStep, CameraStep, ProcessingStep
+- [x] 02-04-PLAN.md — Results components: ContourOverlay, MeasurementCards, SizeRecommendation, ResultsStep with 3D hero
+- [x] 02-05-PLAN.md — Wizard state machine integration in page.tsx + human verification checkpoint
 
 ### Phase 3: Data, Leads + Manufacturer Portal
 **Goal**: Every completed scan creates a customer record in Supabase — including contact info, all measurements, and the STL file — and Jolie and her cobbler can log in to view, manage, and download those records
@@ -68,7 +68,14 @@ Plans:
   3. Jolie can log in to a password-protected portal, see a list of all customer scans with measurements and contact info, and download any customer's STL file
   4. Portal shows order status for each customer (new, in-progress, completed, shipped) and Jolie can update it
   5. Jolie can invite her cobbler to access the portal; no customer can access the portal
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Supabase foundation (client utilities, middleware, DB schema SQL) + STL export + Zod schemas
+- [ ] 03-02-PLAN.md — Lead capture form + API routes (stl-upload, leads) + ResultsStep/page.tsx integration
+- [ ] 03-03-PLAN.md — Admin auth (magic link login, callback, layout guard) + dashboard with ScanTable
+- [ ] 03-04-PLAN.md — Admin actions: status update, STL download, cobbler invite API routes + InviteForm
+- [ ] 03-05-PLAN.md — Pre-flight build verification + human verification of all Phase 3 flows
 
 ### Phase 4: Deployment + Shopify Embed
 **Goal**: The scanner is live at a dedicated HTTPS URL and embeddable inside Jolie's Shopify storefront with camera permission working in the iframe context
@@ -89,5 +96,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. CV Pipeline | 6/6 | Complete   | 2026-03-21 |
 | 2. Scan UX + 3D Results | 5/5 | Complete   | 2026-03-21 |
-| 3. Data, Leads + Manufacturer Portal | 0/TBD | Not started | - |
+| 3. Data, Leads + Manufacturer Portal | 0/5 | Not started | - |
 | 4. Deployment + Shopify Embed | 0/TBD | Not started | - |
