@@ -29,7 +29,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. App extracts foot length, width, arch length, toe box width, and heel width from a single overhead photo with the correct orientation regardless of device or EXIF metadata
   4. User can discard a bad photo and retake without the app crashing or producing degraded measurements on the second attempt
   5. Both left and right feet can be scanned in the same session, producing separate measurement sets
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Scaffold Next.js 15 project + install dependencies + create all test stubs
+- [ ] 01-02-PLAN.md — Type contracts (MeasurementResult), EXIF normalization, camera constraints, ScanSession, useCamera hook
+- [ ] 01-03-PLAN.md — A4 paper detection, perspective correction (warpPerspective), calibration accuracy
+- [ ] 01-04-PLAN.md — Foot contour extraction (HSV segmentation) + all 5 measurement calculations
+- [ ] 01-05-PLAN.md — Full opencv.worker.ts pipeline assembly + CVWorkerBridge facade
+- [ ] 01-06-PLAN.md — Minimal test harness page + human verification on physical device
 
 ### Phase 2: Scan UX + 3D Results
 **Goal**: Users move through a guided scan experience and see their measurements visualized — including an interactive 3D foot model — before being asked for their contact information
@@ -72,7 +80,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. CV Pipeline | 0/TBD | Not started | - |
+| 1. CV Pipeline | 0/6 | Planning complete | - |
 | 2. Scan UX + 3D Results | 0/TBD | Not started | - |
 | 3. Data, Leads + Manufacturer Portal | 0/TBD | Not started | - |
 | 4. Deployment + Shopify Embed | 0/TBD | Not started | - |
