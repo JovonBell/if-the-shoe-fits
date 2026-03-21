@@ -161,7 +161,7 @@ All components are net-new (no existing src/components directory).
 ### Results Step
 - 3D model mounts once and stays mounted for the session duration (prevents iOS WebGL context exhaustion — RESEARCH.md Pitfall 5)
 - Auto-rotate begins on mount; user touch interaction stops auto-rotate
-- OrbitControls: `enablePan={false}`, `minDistance={0.15}`, `maxDistance={0.6}`, `autoRotateSpeed={1.5}`
+- OrbitControls: `enablePan={true}`, `minDistance={0.15}`, `maxDistance={0.6}`, `autoRotateSpeed={1.5}`
 - Measurement cards scroll below 3D canvas — 3D canvas does not scroll
 
 ### Transitions
@@ -240,7 +240,7 @@ Style: 32px × 32px SVG icons, `stroke-maroon` or `stroke-amber-600`, stroke-wid
 | DPR | [1, 2] — cap at 2x | RESEARCH.md Pattern 2 |
 | Material | MeshStandardMaterial; inherit from GLB | default |
 | Loading state | null Suspense fallback — canvas shows empty until model loads | RESEARCH.md Pattern 2 |
-| OrbitControls | autoRotate, enablePan=false, minDistance=0.15, maxDistance=0.6 | RESEARCH.md Pattern 2 |
+| OrbitControls | autoRotate, enablePan=true, minDistance=0.15, maxDistance=0.6 | RESEARCH.md Pattern 2 |
 
 ---
 
