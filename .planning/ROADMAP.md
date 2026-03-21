@@ -32,12 +32,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 6 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Scaffold Next.js 15 project + install dependencies + create all test stubs
-- [ ] 01-02-PLAN.md — Type contracts (MeasurementResult), EXIF normalization, camera constraints, ScanSession, useCamera hook
-- [ ] 01-03-PLAN.md — A4 paper detection, perspective correction (warpPerspective), calibration accuracy
-- [ ] 01-04-PLAN.md — Foot contour extraction (HSV segmentation) + all 5 measurement calculations
-- [ ] 01-05-PLAN.md — Full opencv.worker.ts pipeline assembly + CVWorkerBridge facade
-- [ ] 01-06-PLAN.md — Minimal test harness page + human verification on physical device
+- [x] 01-01-PLAN.md — Scaffold Next.js 15 project + install dependencies + create all test stubs
+- [x] 01-02-PLAN.md — Type contracts (MeasurementResult), EXIF normalization, camera constraints, ScanSession, useCamera hook
+- [x] 01-03-PLAN.md — A4 paper detection, perspective correction (warpPerspective), calibration accuracy
+- [x] 01-04-PLAN.md — Foot contour extraction (HSV segmentation) + all 5 measurement calculations
+- [x] 01-05-PLAN.md — Full opencv.worker.ts pipeline assembly + CVWorkerBridge facade
+- [x] 01-06-PLAN.md — Minimal test harness page + human verification on physical device
 
 ### Phase 2: Scan UX + 3D Results
 **Goal**: Users move through a guided scan experience and see their measurements visualized — including an interactive 3D foot model — before being asked for their contact information
@@ -49,7 +49,14 @@ Plans:
   3. A 3D parametric foot model renders in-browser with interactive rotation and zoom, anatomically scaled to the user's measurements
   4. The entire UI matches the iftheshoefits.co brand (maroon #850321, cream #fffaef, Figtree and Poppins fonts) and is legible and usable on a phone screen
   5. When left and right foot measurements differ, the size recommendation uses the larger foot
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Brand foundation (Figtree/Poppins fonts, Tailwind @theme tokens) + size lookup + mesh deformation logic with tests
+- [ ] 02-02-PLAN.md — Three.js stack install + foot GLB model sourcing + FootModel3D component with parametric deformation
+- [ ] 02-03-PLAN.md — Wizard step components: Button, StepCard, StepIndicator, InstructionsStep, CameraStep, ProcessingStep
+- [ ] 02-04-PLAN.md — Results components: ContourOverlay, MeasurementCards, SizeRecommendation, ResultsStep with 3D hero
+- [ ] 02-05-PLAN.md — Wizard state machine integration in page.tsx + human verification checkpoint
 
 ### Phase 3: Data, Leads + Manufacturer Portal
 **Goal**: Every completed scan creates a customer record in Supabase — including contact info, all measurements, and the STL file — and Jolie and her cobbler can log in to view, manage, and download those records
@@ -76,11 +83,11 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. CV Pipeline | 6/6 | Complete   | 2026-03-21 |
-| 2. Scan UX + 3D Results | 0/TBD | Not started | - |
+| 2. Scan UX + 3D Results | 0/5 | Not started | - |
 | 3. Data, Leads + Manufacturer Portal | 0/TBD | Not started | - |
 | 4. Deployment + Shopify Embed | 0/TBD | Not started | - |
