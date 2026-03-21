@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-data-leads-manufacturer-portal-04-PLAN.md
-last_updated: "2026-03-21T17:24:51.948Z"
+stopped_at: Checkpoint at 03-data-leads-manufacturer-portal-05-PLAN.md (awaiting human verification)
+last_updated: "2026-03-21T17:30:45Z"
 progress:
   total_phases: 4
   completed_phases: 2
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 03 (data-leads-manufacturer-portal) — EXECUTING
-Plan: 2 of 6
+Plan: 5 of 6
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Plan: 2 of 6
 | Phase 03-data-leads-manufacturer-portal P03 | 3 | 2 tasks | 9 files |
 | Phase 03-data-leads-manufacturer-portal P02 | 3 | 2 tasks | 5 files |
 | Phase 03-data-leads-manufacturer-portal P04 | 2 | 2 tasks | 5 files |
+| Phase 03-data-leads-manufacturer-portal P05 | 5 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,7 @@ Recent decisions affecting current work:
 - [Phase 03-data-leads-manufacturer-portal]: formSubmitted tracked as wizard sub-state in page.tsx — no redirect, no new WizardStep type, STL download gated behind form submission
 - [Phase 03-data-leads-manufacturer-portal]: PATCH status route uses authenticated server client (not admin) — RLS allows authenticated UPDATE, no service_role needed
 - [Phase 03-data-leads-manufacturer-portal]: Invite route uses dual-client: server client for getUser() auth check, admin client for inviteUserByEmail() — service_role required per Supabase admin API
+- [Phase 03-data-leads-manufacturer-portal P05]: Worker URL uses relative path (../../workers/...) not absolute — Turbopack production bundler requires relative new URL() paths for Web Worker construction
 
 ### Pending Todos
 
@@ -124,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T17:24:51.946Z
-Stopped at: Completed 03-data-leads-manufacturer-portal-04-PLAN.md
+Last session: 2026-03-21T17:30:45Z
+Stopped at: Checkpoint at 03-data-leads-manufacturer-portal-05-PLAN.md (awaiting human verification of Phase 3 flows)
 Resume file: None

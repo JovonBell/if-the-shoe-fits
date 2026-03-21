@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: CV Pipeline** - Working OpenCV.js worker that accepts a foot-on-A4 photo and returns accurate measurements in millimeters (completed 2026-03-21)
 - [x] **Phase 2: Scan UX + 3D Results** - Complete user-facing scan flow from camera capture through 3D model display (completed 2026-03-21)
-- [ ] **Phase 3: Data, Leads + Manufacturer Portal** - Lead persistence, size recommendation, and Jolie's admin portal for managing customer records
+- [x] **Phase 3: Data, Leads + Manufacturer Portal** - Lead persistence, size recommendation, and Jolie's admin portal for managing customer records (completed 2026-03-21)
 - [ ] **Phase 4: Deployment + Shopify Embed** - Ship to Vercel at a dedicated URL and embed on the Shopify storefront
 
 ## Phase Details
@@ -97,5 +97,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. CV Pipeline | 6/6 | Complete   | 2026-03-21 |
 | 2. Scan UX + 3D Results | 5/5 | Complete   | 2026-03-21 |
-| 3. Data, Leads + Manufacturer Portal | 5/6 | In Progress|  |
+| 3. Data, Leads + Manufacturer Portal | 6/6 | Complete   | 2026-03-21 |
 | 4. Deployment + Shopify Embed | 0/TBD | Not started | - |
