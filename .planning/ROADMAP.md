@@ -12,7 +12,7 @@ Four phases deliver a browser-based foot scanning tool for Jolie Wyatt's custom 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: CV Pipeline** - Working OpenCV.js worker that accepts a foot-on-A4 photo and returns accurate measurements in millimeters
+- [x] **Phase 1: CV Pipeline** - Working OpenCV.js worker that accepts a foot-on-A4 photo and returns accurate measurements in millimeters (completed 2026-03-21)
 - [ ] **Phase 2: Scan UX + 3D Results** - Complete user-facing scan flow from camera capture through 3D model display
 - [ ] **Phase 3: Data, Leads + Manufacturer Portal** - Lead persistence, size recommendation, and Jolie's admin portal for managing customer records
 - [ ] **Phase 4: Deployment + Shopify Embed** - Ship to Vercel at a dedicated URL and embed on the Shopify storefront
@@ -80,7 +80,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. CV Pipeline | 5/6 | In Progress|  |
+| 1. CV Pipeline | 6/6 | Complete   | 2026-03-21 |
 | 2. Scan UX + 3D Results | 0/TBD | Not started | - |
 | 3. Data, Leads + Manufacturer Portal | 0/TBD | Not started | - |
 | 4. Deployment + Shopify Embed | 0/TBD | Not started | - |

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-cv-pipeline-05-PLAN.md
-last_updated: "2026-03-21T08:20:03.770Z"
+stopped_at: Completed 01-cv-pipeline-06-PLAN.md
+last_updated: "2026-03-21T08:23:12.256Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -51,6 +51,7 @@ Plan: 3 of 6
 | Phase 01-cv-pipeline P03 | 4 min | 1 task | 3 files |
 | Phase 01-cv-pipeline P04 | 104 | 2 tasks | 4 files |
 | Phase 01-cv-pipeline P05 | 8 | 2 tasks | 2 files |
+| Phase 01-cv-pipeline P06 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,7 @@ Recent decisions affecting current work:
 - [Phase 01-cv-pipeline]: extractMeasurements is pure JS with zero OpenCV dependency — testable without WASM
 - [Phase 01-cv-pipeline]: opencv.worker.ts uses importScripts (not dynamic import) — only pattern compatible with opencv.js module format
 - [Phase 01-cv-pipeline]: CVWorkerBridge uses UUID correlation IDs and transferable ImageData buffer for zero-copy worker messaging
+- [Phase 01-cv-pipeline]: Turbopack works without --webpack flag in Next.js 16.2.1 for Worker URL resolution
 
 ### Pending Todos
 
@@ -87,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T08:20:03.768Z
-Stopped at: Completed 01-cv-pipeline-05-PLAN.md
+Last session: 2026-03-21T08:23:12.254Z
+Stopped at: Completed 01-cv-pipeline-06-PLAN.md
 Resume file: None
