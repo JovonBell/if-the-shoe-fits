@@ -81,7 +81,7 @@ Each task was committed atomically:
 1. **Task 1: Status update + STL download API routes** - `0072128` (feat)
 2. **Task 2: InviteForm component + invite API route + wire into dashboard** - `c213373` (feat)
 
-**Plan metadata:** (docs commit hash — added after state update)
+**Plan metadata:** `7e2ccf2` (docs: complete admin action routes + InviteForm plan)
 
 ## Files Created/Modified
 - `src/app/api/admin/scans/[id]/route.ts` - PATCH endpoint: validates status, updates via authenticated client, returns 401/400/500
