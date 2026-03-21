@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-data-leads-manufacturer-portal-01-PLAN.md
-last_updated: "2026-03-21T17:13:55.880Z"
+stopped_at: Completed 03-data-leads-manufacturer-portal-03-PLAN.md
+last_updated: "2026-03-21T17:19:43.797Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 17
-  completed_plans: 13
+  completed_plans: 15
 ---
 
 # Project State
@@ -59,6 +59,8 @@ Plan: 2 of 6
 | Phase 02-scan-ux-3d-results P05 | 8 | 1 tasks | 1 files |
 | Phase 02-scan-ux-3d-results P05 | 8 | 2 tasks | 1 files |
 | Phase 03-data-leads-manufacturer-portal P01 | 3 | 2 tasks | 10 files |
+| Phase 03-data-leads-manufacturer-portal P03 | 3 | 2 tasks | 9 files |
+| Phase 03-data-leads-manufacturer-portal P02 | 3 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -100,6 +102,9 @@ Recent decisions affecting current work:
 - [Phase 03-data-leads-manufacturer-portal]: Use getUser() not getSession() in middleware — getSession() does not validate JWT server-side, a crafted cookie would bypass auth
 - [Phase 03-data-leads-manufacturer-portal]: STL export re-runs GLTFLoader+deformation independently — avoids R3F Canvas/Suspense ref drilling through prop chains
 - [Phase 03-data-leads-manufacturer-portal]: Import Zod from 'zod' not 'zod/v4' — Zod 4.3.6 is the default export, subpath was only a transition mechanism
+- [Phase 03-data-leads-manufacturer-portal]: shouldCreateUser: false in signInWithOtp — prevents unknown emails from auto-creating auth accounts
+- [Phase 03-data-leads-manufacturer-portal]: Admin layout uses getUser() not getSession() — getSession() does not validate JWT server-side
+- [Phase 03-data-leads-manufacturer-portal]: RSC + client wrapper pattern: admin/page.tsx fetches data server-side, dashboard-client.tsx manages interactive state
 
 ### Pending Todos
 
@@ -113,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T17:13:55.878Z
-Stopped at: Completed 03-data-leads-manufacturer-portal-01-PLAN.md
+Last session: 2026-03-21T17:19:31.423Z
+Stopped at: Completed 03-data-leads-manufacturer-portal-03-PLAN.md
 Resume file: None
