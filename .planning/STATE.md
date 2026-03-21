@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-data-leads-manufacturer-portal-03-PLAN.md
-last_updated: "2026-03-21T17:19:43.797Z"
+stopped_at: Completed 03-data-leads-manufacturer-portal-02-PLAN.md
+last_updated: "2026-03-21T17:19:53.594Z"
 progress:
   total_phases: 4
   completed_phases: 2
@@ -105,6 +105,9 @@ Recent decisions affecting current work:
 - [Phase 03-data-leads-manufacturer-portal]: shouldCreateUser: false in signInWithOtp — prevents unknown emails from auto-creating auth accounts
 - [Phase 03-data-leads-manufacturer-portal]: Admin layout uses getUser() not getSession() — getSession() does not validate JWT server-side
 - [Phase 03-data-leads-manufacturer-portal]: RSC + client wrapper pattern: admin/page.tsx fetches data server-side, dashboard-client.tsx manages interactive state
+- [Phase 03-data-leads-manufacturer-portal]: Admin client (service_role) for STL upload + lead insert — no browser Supabase client needed, simpler than RLS anon INSERT
+- [Phase 03-data-leads-manufacturer-portal]: STL export runs before lead insert — prevents orphaned DB records without storage files
+- [Phase 03-data-leads-manufacturer-portal]: formSubmitted tracked as wizard sub-state in page.tsx — no redirect, no new WizardStep type, STL download gated behind form submission
 
 ### Pending Todos
 
@@ -118,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T17:19:31.423Z
-Stopped at: Completed 03-data-leads-manufacturer-portal-03-PLAN.md
+Last session: 2026-03-21T17:19:53.592Z
+Stopped at: Completed 03-data-leads-manufacturer-portal-02-PLAN.md
 Resume file: None
