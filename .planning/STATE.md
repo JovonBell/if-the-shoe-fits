@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-cv-pipeline-02-PLAN.md
-last_updated: "2026-03-21T04:14:00.000Z"
+stopped_at: Completed 01-cv-pipeline-03-PLAN.md
+last_updated: "2026-03-21T08:16:33.998Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 01 (cv-pipeline) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Plan: 2 of 6
 *Updated after each plan completion*
 | Phase 01-cv-pipeline P01 | 4 min | 2 tasks | 21 files |
 | Phase 01-cv-pipeline P02 | 12 min | 2 tasks | 5 files |
+| Phase 01-cv-pipeline P03 | 4 min | 1 task | 3 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [Phase 01-cv-pipeline P02]: exifr.rotation() used instead of raw EXIF Orientation tag — handles iOS Safari autorotation quirk correctly
 - [Phase 01-cv-pipeline P02]: CAMERA_CONSTRAINTS uses ideal (not exact) resolution — single-camera device compatible
 - [Phase 01-cv-pipeline P02]: FootSide type added to types.ts — used by ScanSession and future worker
+- [Phase 01-cv-pipeline]: detectA4Corners receives cv as parameter to avoid Worker/main-thread coupling
+- [Phase 01-cv-pipeline]: detectA4Corners returns null (not throws) when no A4 quad found — caller handles error
+- [Phase 01-cv-pipeline]: SCALE=2 hardcoded — output always 420x594px, pixelsPerMm=2 is invariant
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T04:14:00.000Z
-Stopped at: Completed 01-cv-pipeline-02-PLAN.md
+Last session: 2026-03-21T08:15:00.000Z
+Stopped at: Completed 01-cv-pipeline-03-PLAN.md
 Resume file: None
