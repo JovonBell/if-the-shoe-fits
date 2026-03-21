@@ -68,9 +68,10 @@ Plans:
   3. Jolie can log in to a password-protected portal, see a list of all customer scans with measurements and contact info, and download any customer's STL file
   4. Portal shows order status for each customer (new, in-progress, completed, shipped) and Jolie can update it
   5. Jolie can invite her cobbler to access the portal; no customer can access the portal
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
+- [ ] 03-00-PLAN.md — Wave 0: Create 9 test stub files for Phase 3 TDD foundation
 - [ ] 03-01-PLAN.md — Supabase foundation (client utilities, middleware, DB schema SQL) + STL export + Zod schemas
 - [ ] 03-02-PLAN.md — Lead capture form + API routes (stl-upload, leads) + ResultsStep/page.tsx integration
 - [ ] 03-03-PLAN.md — Admin auth (magic link login, callback, layout guard) + dashboard with ScanTable
@@ -96,5 +97,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. CV Pipeline | 6/6 | Complete   | 2026-03-21 |
 | 2. Scan UX + 3D Results | 5/5 | Complete   | 2026-03-21 |
-| 3. Data, Leads + Manufacturer Portal | 0/5 | Not started | - |
+| 3. Data, Leads + Manufacturer Portal | 0/6 | Not started | - |
 | 4. Deployment + Shopify Embed | 0/TBD | Not started | - |
