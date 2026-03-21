@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-cv-pipeline-04-PLAN.md
-last_updated: "2026-03-21T08:17:15.085Z"
+stopped_at: Completed 01-cv-pipeline-05-PLAN.md
+last_updated: "2026-03-21T08:20:03.770Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -50,6 +50,7 @@ Plan: 3 of 6
 | Phase 01-cv-pipeline P02 | 12 min | 2 tasks | 5 files |
 | Phase 01-cv-pipeline P03 | 4 min | 1 task | 3 files |
 | Phase 01-cv-pipeline P04 | 104 | 2 tasks | 4 files |
+| Phase 01-cv-pipeline P05 | 8 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [Phase 01-cv-pipeline]: detectA4Corners returns null (not throws) when no A4 quad found — caller handles error
 - [Phase 01-cv-pipeline]: SCALE=2 hardcoded — output always 420x594px, pixelsPerMm=2 is invariant
 - [Phase 01-cv-pipeline]: extractMeasurements is pure JS with zero OpenCV dependency — testable without WASM
+- [Phase 01-cv-pipeline]: opencv.worker.ts uses importScripts (not dynamic import) — only pattern compatible with opencv.js module format
+- [Phase 01-cv-pipeline]: CVWorkerBridge uses UUID correlation IDs and transferable ImageData buffer for zero-copy worker messaging
 
 ### Pending Todos
 
@@ -84,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T08:17:15.083Z
-Stopped at: Completed 01-cv-pipeline-04-PLAN.md
+Last session: 2026-03-21T08:20:03.768Z
+Stopped at: Completed 01-cv-pipeline-05-PLAN.md
 Resume file: None
