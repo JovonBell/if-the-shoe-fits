@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-data-leads-manufacturer-portal-00-PLAN.md
-last_updated: "2026-03-21T17:11:00Z"
+stopped_at: Completed 03-data-leads-manufacturer-portal-01-PLAN.md
+last_updated: "2026-03-21T17:13:55.880Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 17
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -58,6 +58,7 @@ Plan: 2 of 6
 | Phase 02-scan-ux-3d-results P04 | 8 | 2 tasks | 4 files |
 | Phase 02-scan-ux-3d-results P05 | 8 | 1 tasks | 1 files |
 | Phase 02-scan-ux-3d-results P05 | 8 | 2 tasks | 1 files |
+| Phase 03-data-leads-manufacturer-portal P01 | 3 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,9 @@ Recent decisions affecting current work:
 - [Phase 02-scan-ux-3d-results]: WizardStep type drives conditional rendering; DOMException name check for camera denial; handleScanOtherFoot reuses same camera start logic
 - [Phase 03-data-leads-manufacturer-portal P00]: Test stubs use test.todo() — avoids import failures before implementations exist, keeps stubs compile-safe
 - [Phase 03-data-leads-manufacturer-portal P00]: No module imports in stubs — implementors in Plans 01-04 add real imports + assertions when building modules
+- [Phase 03-data-leads-manufacturer-portal]: Use getUser() not getSession() in middleware — getSession() does not validate JWT server-side, a crafted cookie would bypass auth
+- [Phase 03-data-leads-manufacturer-portal]: STL export re-runs GLTFLoader+deformation independently — avoids R3F Canvas/Suspense ref drilling through prop chains
+- [Phase 03-data-leads-manufacturer-portal]: Import Zod from 'zod' not 'zod/v4' — Zod 4.3.6 is the default export, subpath was only a transition mechanism
 
 ### Pending Todos
 
@@ -109,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T17:11:00Z
-Stopped at: Completed 03-data-leads-manufacturer-portal-00-PLAN.md
+Last session: 2026-03-21T17:13:55.878Z
+Stopped at: Completed 03-data-leads-manufacturer-portal-01-PLAN.md
 Resume file: None

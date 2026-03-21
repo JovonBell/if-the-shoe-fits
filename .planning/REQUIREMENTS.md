@@ -47,7 +47,7 @@
 
 ### Manufacturer Portal
 
-- [ ] **MFR-01**: Jolie + cobbler can log in to a password-protected admin portal
+- [x] **MFR-01**: Jolie + cobbler can log in to a password-protected admin portal
 - [x] **MFR-02**: Portal displays list of customer scans with measurements and contact info
 - [x] **MFR-03**: Portal allows viewing and downloading STL files for each customer
 - [x] **MFR-04**: Portal has order status management (new → in-progress → completed → shipped)
@@ -125,7 +125,7 @@
 | LEAD-01 | Phase 3 | Complete |
 | LEAD-02 | Phase 3 | Complete |
 | LEAD-03 | Phase 3 | Complete |
-| MFR-01 | Phase 3 | Pending |
+| MFR-01 | Phase 3 | Complete |
 | MFR-02 | Phase 3 | Complete |
 | MFR-03 | Phase 3 | Complete |
 | MFR-04 | Phase 3 | Complete |
