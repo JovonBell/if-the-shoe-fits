@@ -26,8 +26,8 @@
 - [x] **3DM-01**: App generates parametric 3D foot model from extracted measurements (length, width, arch, toe box, heel)
 - [x] **3DM-02**: 3D model displays in-browser with interactive rotation/zoom (Three.js)
 - [x] **3DM-03**: 3D model is anatomically scaled using a template foot mesh deformed by measurements
-- [ ] **3DM-04**: App exports 3D foot model as downloadable STL file
-- [ ] **3DM-05**: STL file is uploaded and stored in Supabase Storage linked to customer record
+- [x] **3DM-04**: App exports 3D foot model as downloadable STL file
+- [x] **3DM-05**: STL file is uploaded and stored in Supabase Storage linked to customer record
 
 ### User Experience
 
@@ -41,17 +41,17 @@
 
 ### Lead Capture + Data
 
-- [ ] **LEAD-01**: User submits contact form after seeing results: first name, email, phone, current shoe size
-- [ ] **LEAD-02**: Measurements + contact info + STL file reference persisted to Supabase
-- [ ] **LEAD-03**: Each scan creates a complete customer record (contact + measurements + 3D model + timestamp)
+- [x] **LEAD-01**: User submits contact form after seeing results: first name, email, phone, current shoe size
+- [x] **LEAD-02**: Measurements + contact info + STL file reference persisted to Supabase
+- [x] **LEAD-03**: Each scan creates a complete customer record (contact + measurements + 3D model + timestamp)
 
 ### Manufacturer Portal
 
 - [ ] **MFR-01**: Jolie + cobbler can log in to a password-protected admin portal
-- [ ] **MFR-02**: Portal displays list of customer scans with measurements and contact info
-- [ ] **MFR-03**: Portal allows viewing and downloading STL files for each customer
-- [ ] **MFR-04**: Portal has order status management (new → in-progress → completed → shipped)
-- [ ] **MFR-05**: Portal is invite-only (Jolie creates accounts for her cobbler)
+- [x] **MFR-02**: Portal displays list of customer scans with measurements and contact info
+- [x] **MFR-03**: Portal allows viewing and downloading STL files for each customer
+- [x] **MFR-04**: Portal has order status management (new → in-progress → completed → shipped)
+- [x] **MFR-05**: Portal is invite-only (Jolie creates accounts for her cobbler)
 
 ### Deployment + Integration
 
@@ -113,8 +113,8 @@
 | 3DM-01 | Phase 2 | Complete |
 | 3DM-02 | Phase 2 | Complete |
 | 3DM-03 | Phase 2 | Complete |
-| 3DM-04 | Phase 3 | Pending |
-| 3DM-05 | Phase 3 | Pending |
+| 3DM-04 | Phase 3 | Complete |
+| 3DM-05 | Phase 3 | Complete |
 | UX-01 | Phase 2 | Complete |
 | UX-02 | Phase 2 | Complete |
 | UX-03 | Phase 2 | Complete |
@@ -122,14 +122,14 @@
 | UX-05 | Phase 2 | Complete |
 | UX-06 | Phase 2 | Complete |
 | UX-07 | Phase 2 | Complete |
-| LEAD-01 | Phase 3 | Pending |
-| LEAD-02 | Phase 3 | Pending |
-| LEAD-03 | Phase 3 | Pending |
+| LEAD-01 | Phase 3 | Complete |
+| LEAD-02 | Phase 3 | Complete |
+| LEAD-03 | Phase 3 | Complete |
 | MFR-01 | Phase 3 | Pending |
-| MFR-02 | Phase 3 | Pending |
-| MFR-03 | Phase 3 | Pending |
-| MFR-04 | Phase 3 | Pending |
-| MFR-05 | Phase 3 | Pending |
+| MFR-02 | Phase 3 | Complete |
+| MFR-03 | Phase 3 | Complete |
+| MFR-04 | Phase 3 | Complete |
+| MFR-05 | Phase 3 | Complete |
 | DEPLOY-01 | Phase 4 | Pending |
 | DEPLOY-02 | Phase 4 | Pending |
 | DEPLOY-03 | Phase 4 | Pending |
