@@ -5,24 +5,33 @@ import { useCamera } from '@/hooks/useCamera'
 import { CVWorkerBridge } from '@/lib/cv/worker-bridge'
 import { normalizeOrientation } from '@/lib/cv/exif'
 import { resizeImageData } from '@/lib/cv/camera-constraints'
-import type { ScanResult } from '@/lib/cv/types'
+import { ScanSession } from '@/lib/cv/session'
+import type { MeasurementResult, FootSide } from '@/lib/cv/types'
+import { StepIndicator } from '@/components/wizard/StepIndicator'
+import { InstructionsStep } from '@/components/wizard/InstructionsStep'
+import { CameraStep } from '@/components/wizard/CameraStep'
+import { ProcessingStep } from '@/components/wizard/ProcessingStep'
+import { ResultsStep } from '@/components/wizard/ResultsStep'
 
-type AppState = 'loading' | 'ready' | 'capturing' | 'processing' | 'result' | 'error'
+type WizardStep = 'instructions' | 'camera' | 'processing' | 'results'
 
 export default function Home() {
-  const { videoRef, startCamera, capturePhoto, stopCamera } = useCamera()
-  const bridgeRef = useRef<CVWorkerBridge | null>(null)
+  const [step, setStep] = useState<WizardStep>('instructions')
+  const [session] = useState(() => new ScanSession())
+  const [currentSide, setCurrentSide] = useState<FootSide>('left')
+  const [latestResult, setLatestResult] = useState<MeasurementResult | null>(null)
+  const [capturedImageData, setCapturedImageData] = useState<ImageData | null>(null)
+  const [cameraError, setCameraError] = useState<{ code: string; message: string } | null>(null)
   const [workerReady, setWorkerReady] = useState(false)
-  const [appState, setAppState] = useState<AppState>('loading')
-  const [result, setResult] = useState<ScanResult | null>(null)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Initialize worker on mount
+  const bridgeRef = useRef<CVWorkerBridge | null>(null)
+  const { videoRef, startCamera, capturePhoto, stopCamera } = useCamera()
+
+  // Initialize CV worker on mount
   useEffect(() => {
     const bridge = new CVWorkerBridge()
     bridgeRef.current = bridge
 
-    // Poll for worker ready — READY message fires asynchronously
     const interval = setInterval(() => {
       if (bridge.isReady) {
         setWorkerReady(true)
@@ -36,23 +45,34 @@ export default function Home() {
     }
   }, [])
 
-  // Start camera when worker is ready
-  useEffect(() => {
-    if (!workerReady) return
-    startCamera()
-      .then(() => setAppState('ready'))
-      .catch(err => {
-        setErrorMsg(`Camera error: ${err.message}`)
-        setAppState('error')
-      })
-  }, [workerReady, startCamera])
+  const handleStart = useCallback(async () => {
+    setStep('camera')
+    try {
+      await startCamera()
+    } catch (err) {
+      const isDenied =
+        err instanceof DOMException &&
+        (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
+      if (isDenied) {
+        setCameraError({
+          code: 'CAMERA_DENIED',
+          message:
+            'Camera access is required. Please allow camera access in your browser settings and refresh.',
+        })
+      } else {
+        setCameraError({
+          code: 'CAMERA_ERROR',
+          message: err instanceof Error ? err.message : 'Could not start camera.',
+        })
+      }
+    }
+  }, [startCamera])
 
   const handleCapture = useCallback(async () => {
-    if (!bridgeRef.current || appState !== 'ready') return
+    if (!bridgeRef.current || !workerReady) return
 
-    setAppState('processing')
-    setResult(null)
-    setErrorMsg(null)
+    setStep('processing')
+    setCameraError(null)
 
     try {
       // Step 1: Capture photo from video frame
@@ -60,124 +80,114 @@ export default function Home() {
 
       // Step 2: Convert canvas to Blob for EXIF reading
       const blob = await new Promise<Blob>((res, rej) =>
-        photoCanvas.toBlob(b => b ? res(b) : rej(new Error('Canvas toBlob failed')), 'image/jpeg', 0.95)
+        photoCanvas.toBlob(
+          b => (b ? res(b) : rej(new Error('Canvas toBlob failed'))),
+          'image/jpeg',
+          0.95,
+        ),
       )
 
       // Step 3: Normalize EXIF orientation (Android rotation fix)
       const normalizedImageData = await normalizeOrientation(blob)
 
       // Step 4: Resize to max 1200px (prevents 10-30s processing on 48MP shots)
-      // normalizedImageData is already an ImageData — draw to canvas first for resizeImageData
       const tempCanvas = document.createElement('canvas')
       tempCanvas.width = normalizedImageData.width
       tempCanvas.height = normalizedImageData.height
       tempCanvas.getContext('2d')!.putImageData(normalizedImageData, 0, 0)
       const resizedImageData = resizeImageData(tempCanvas, 1200)
 
-      // Step 5: Send to worker (buffer is transferred — zero-copy)
-      const scanResult = await bridgeRef.current.process(resizedImageData, 'left')
+      // Step 5: Store a COPY before transferring — transferable makes original unusable
+      const imageDataCopy = new ImageData(
+        new Uint8ClampedArray(resizedImageData.data),
+        resizedImageData.width,
+        resizedImageData.height,
+      )
+      setCapturedImageData(imageDataCopy)
 
-      setResult(scanResult)
-      setAppState('result')
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : String(err))
-      setAppState('error')
+      // Step 6: Send to worker (buffer is transferred — zero-copy)
+      const scanResult = await bridgeRef.current.process(resizedImageData, currentSide)
+
+      if (scanResult.success) {
+        session.setResult(currentSide, scanResult.data)
+        setLatestResult(scanResult.data)
+        stopCamera() // CRITICAL: stop camera LED before transitioning to results
+        setStep('results')
+      } else {
+        const errorMessages: Record<string, string> = {
+          A4_NOT_DETECTED:
+            'Paper not found. Make sure your A4 paper is fully visible and on a dark surface.',
+          FOOT_NOT_DETECTED:
+            'Foot not found. Ensure your whole foot is on the paper with good lighting.',
+          POOR_LIGHTING: 'Poor lighting detected. Move to a brighter area and try again.',
+          CALIBRATION_FAILED:
+            'Calibration failed. Make sure the entire A4 paper is in frame.',
+        }
+        const message =
+          errorMessages[scanResult.error.code] ?? 'Something went wrong. Please retake the photo.'
+        setCameraError({ code: scanResult.error.code, message })
+        setStep('camera')
+      }
+    } catch {
+      setCameraError({
+        code: 'CV_ERROR',
+        message: 'Something went wrong. Please retake the photo.',
+      })
+      setStep('camera')
     }
-  }, [appState, capturePhoto])
+  }, [workerReady, capturePhoto, currentSide, session, stopCamera])
 
-  const handleRetake = useCallback(() => {
-    setResult(null)
-    setErrorMsg(null)
-    setAppState('ready')
-    // Camera stream is already running — no need to restart
-  }, [])
+  const handleScanOtherFoot = useCallback(async () => {
+    const otherSide: FootSide = currentSide === 'left' ? 'right' : 'left'
+    setCurrentSide(otherSide)
+    setLatestResult(null)
+    setCapturedImageData(null)
+    setStep('camera')
+    try {
+      await startCamera()
+    } catch (err) {
+      const isDenied =
+        err instanceof DOMException &&
+        (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
+      if (isDenied) {
+        setCameraError({
+          code: 'CAMERA_DENIED',
+          message:
+            'Camera access is required. Please allow camera access in your browser settings and refresh.',
+        })
+      } else {
+        setCameraError({
+          code: 'CAMERA_ERROR',
+          message: err instanceof Error ? err.message : 'Could not start camera.',
+        })
+      }
+    }
+  }, [currentSide, startCamera])
 
   return (
-    <main style={{ fontFamily: 'monospace', padding: '16px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '18px', marginBottom: '8px' }}>
-        CV Pipeline Test Harness — Phase 1
-      </h1>
+    <main className="min-h-dvh bg-cream flex flex-col font-body text-dark">
+      <StepIndicator currentStep={step} />
 
-      <p style={{ fontSize: '12px', color: '#666', marginBottom: '16px' }}>
-        Worker: {workerReady ? '✓ ready' : '⏳ loading OpenCV WASM...'}
-        {' | '}
-        State: {appState}
-      </p>
-
-      {/* Camera preview */}
-      <video
-        ref={videoRef}
-        playsInline   // Required for iOS Safari autoplay
-        muted
-        style={{
-          width: '100%',
-          maxWidth: '480px',
-          display: 'block',
-          background: '#000',
-          marginBottom: '12px',
-        }}
-      />
-
-      {/* Controls */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-        <button
-          onClick={handleCapture}
-          disabled={appState !== 'ready'}
-          style={{ padding: '8px 16px', fontSize: '14px' }}
-        >
-          {appState === 'processing' ? 'Processing...' : 'Capture + Process'}
-        </button>
-
-        {(appState === 'result' || appState === 'error') && (
-          <button onClick={handleRetake} style={{ padding: '8px 16px', fontSize: '14px' }}>
-            Retake
-          </button>
+      <div className="flex-1 flex flex-col">
+        {step === 'instructions' && <InstructionsStep onStart={handleStart} />}
+        {step === 'camera' && (
+          <CameraStep
+            videoRef={videoRef}
+            side={currentSide}
+            onCapture={handleCapture}
+            error={cameraError}
+          />
+        )}
+        {step === 'processing' && <ProcessingStep />}
+        {step === 'results' && latestResult && (
+          <ResultsStep
+            session={session}
+            latestResult={latestResult}
+            capturedImageData={capturedImageData}
+            onScanOtherFoot={handleScanOtherFoot}
+          />
         )}
       </div>
-
-      {/* Error display */}
-      {errorMsg && (
-        <div style={{ padding: '12px', background: '#fff0f0', border: '1px solid #f00', marginBottom: '12px' }}>
-          <strong>Error:</strong> {errorMsg}
-        </div>
-      )}
-
-      {/* Results display */}
-      {result && (
-        <div style={{ padding: '12px', background: '#f0fff0', border: '1px solid #0a0', marginBottom: '12px' }}>
-          {result.success ? (
-            <>
-              <strong>Measurements (mm):</strong>
-              <pre style={{ fontSize: '12px', margin: '8px 0 0 0' }}>
-{`Length:   ${result.data.length_mm.toFixed(1)}mm
-Width:    ${result.data.width_mm.toFixed(1)}mm
-Arch:     ${result.data.arch_mm.toFixed(1)}mm
-Toe box:  ${result.data.toe_box_mm.toFixed(1)}mm
-Heel:     ${result.data.heel_mm.toFixed(1)}mm
-Accuracy: ±${result.data.accuracy_mm.toFixed(1)}mm (${result.data.confidence})`}
-              </pre>
-            </>
-          ) : (
-            <>
-              <strong>Scan Error [{result.error.code}]:</strong>
-              <p style={{ margin: '4px 0 0 0', fontSize: '13px' }}>{result.error.message}</p>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Instructions */}
-      <details style={{ fontSize: '12px', color: '#666' }}>
-        <summary>Test checklist (SCAN-01, SCAN-11, SCAN-13)</summary>
-        <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
-          <li>SCAN-01: Camera preview renders on iOS Safari and Android Chrome</li>
-          <li>SCAN-11: Retake 5× — verify no WASM heap growth (DevTools Memory tab)</li>
-          <li>SCAN-13: Video continues to render during processing (no main-thread freeze)</li>
-          <li>A4 detection: Place foot on A4 paper on dark surface, capture</li>
-          <li>EXIF: Test on Android holding phone portrait — measurements should not be swapped</li>
-          <li>White floor: Test on white surface — should get clear A4_NOT_DETECTED error</li>
-        </ul>
-      </details>
     </main>
   )
 }
