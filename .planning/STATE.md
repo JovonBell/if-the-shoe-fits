@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-scan-ux-3d-results-03-PLAN.md
-last_updated: "2026-03-21T09:52:40.665Z"
+stopped_at: Completed 02-scan-ux-3d-results-04-PLAN.md
+last_updated: "2026-03-21T09:55:44.398Z"
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -55,6 +55,7 @@ Plan: 1 of 5
 | Phase 02-scan-ux-3d-results P01 | 2 | 2 tasks | 7 files |
 | Phase 02-scan-ux-3d-results P02 | 4 | 2 tasks | 6 files |
 | Phase 02-scan-ux-3d-results PP03 | 2 | 2 tasks | 6 files |
+| Phase 02-scan-ux-3d-results P04 | 8 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 02-scan-ux-3d-results]: Inline SVG icons used for wizard step illustrations — no icon library, custom line art per UI-SPEC
 - [Phase 02-scan-ux-3d-results]: CameraStep purely presentational — videoRef and callbacks injected by parent, no useCamera import
 - [Phase 02-scan-ux-3d-results]: motion-safe:animate-pulse on ProcessingStep spinner — respects prefers-reduced-motion natively
+- [Phase 02-scan-ux-3d-results]: canvas.width/height set from imageData dimensions before putImageData to avoid coordinate space mismatch
+- [Phase 02-scan-ux-3d-results]: ResultsStep uses dynamic(() => import(FootModel3D), { ssr: false }) — Three.js accesses window at import time
 
 ### Pending Todos
 
@@ -100,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T09:52:40.662Z
-Stopped at: Completed 02-scan-ux-3d-results-03-PLAN.md
+Last session: 2026-03-21T09:55:44.396Z
+Stopped at: Completed 02-scan-ux-3d-results-04-PLAN.md
 Resume file: None

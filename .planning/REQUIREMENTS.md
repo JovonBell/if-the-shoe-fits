@@ -32,10 +32,10 @@
 ### User Experience
 
 - [x] **UX-01**: Step-by-step guided scanning instructions with visual overlays showing correct foot placement
-- [ ] **UX-02**: Results page displays all measurements (length, width, arch, toe box, heel) with contour overlay on photo
+- [x] **UX-02**: Results page displays all measurements (length, width, arch, toe box, heel) with contour overlay on photo
 - [x] **UX-03**: US/EU/UK shoe size recommendation from measurements
 - [x] **UX-04**: Brand-aligned UI: maroon #850321, cream #fffaef, Figtree + Poppins fonts
-- [ ] **UX-05**: "Designed for outliers" empowerment messaging throughout the flow
+- [x] **UX-05**: "Designed for outliers" empowerment messaging throughout the flow
 - [x] **UX-06**: Recommendation uses larger foot when left/right differ
 - [x] **UX-07**: Mobile-first responsive design optimized for phone screens
 
@@ -116,10 +116,10 @@
 | 3DM-04 | Phase 3 | Pending |
 | 3DM-05 | Phase 3 | Pending |
 | UX-01 | Phase 2 | Complete |
-| UX-02 | Phase 2 | Pending |
+| UX-02 | Phase 2 | Complete |
 | UX-03 | Phase 2 | Complete |
 | UX-04 | Phase 2 | Complete |
-| UX-05 | Phase 2 | Pending |
+| UX-05 | Phase 2 | Complete |
 | UX-06 | Phase 2 | Complete |
 | UX-07 | Phase 2 | Complete |
 | LEAD-01 | Phase 3 | Pending |
