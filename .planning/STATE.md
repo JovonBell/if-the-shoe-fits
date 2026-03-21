@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-cv-pipeline-06-PLAN.md
-last_updated: "2026-03-21T08:23:12.256Z"
+stopped_at: Completed 02-scan-ux-3d-results-01-PLAN.md
+last_updated: "2026-03-21T09:46:51.568Z"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 11
+  completed_plans: 7
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Users can accurately measure their feet from their phone browser and submit their measurements + contact info for custom shoe fitting
-**Current focus:** Phase 01 — cv-pipeline
+**Current focus:** Phase 02 — scan-ux-3d-results
 
 ## Current Position
 
-Phase: 01 (cv-pipeline) — EXECUTING
-Plan: 3 of 6
+Phase: 02 (scan-ux-3d-results) — EXECUTING
+Plan: 1 of 5
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Plan: 3 of 6
 | Phase 01-cv-pipeline P04 | 104 | 2 tasks | 4 files |
 | Phase 01-cv-pipeline P05 | 8 | 2 tasks | 2 files |
 | Phase 01-cv-pipeline P06 | 3 | 2 tasks | 2 files |
+| Phase 02-scan-ux-3d-results P01 | 2 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase 01-cv-pipeline]: opencv.worker.ts uses importScripts (not dynamic import) — only pattern compatible with opencv.js module format
 - [Phase 01-cv-pipeline]: CVWorkerBridge uses UUID correlation IDs and transferable ImageData buffer for zero-copy worker messaging
 - [Phase 01-cv-pipeline]: Turbopack works without --webpack flag in Next.js 16.2.1 for Worker URL resolution
+- [Phase 02-scan-ux-3d-results]: Figtree 600+700 / Poppins 400+500 font weights per UI-SPEC.md (2 weights per family)
+- [Phase 02-scan-ux-3d-results]: TEMPLATE_DIMENSIONS are placeholders (270x100x80mm); must measure actual GLB bounding box in Plan 02
+- [Phase 02-scan-ux-3d-results]: Z-scale clamped to [0.8, 1.2] to prevent extreme deformation from imprecise arch_mm top-down projection
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T08:23:12.254Z
-Stopped at: Completed 01-cv-pipeline-06-PLAN.md
+Last session: 2026-03-21T09:46:51.566Z
+Stopped at: Completed 02-scan-ux-3d-results-01-PLAN.md
 Resume file: None
