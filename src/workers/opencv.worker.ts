@@ -36,6 +36,10 @@ function runMeasurementPipeline(imageData: ImageData, footSide: 'left' | 'right'
 
     // Step 1: A4 paper detection
     const corners = detectA4Corners(cv, mat)
+    // DEBUG: log corners to help diagnose detection issues
+    if (corners) {
+      console.log('[CV Worker] Corners found:', JSON.stringify(corners))
+    }
     if (!corners) {
       return makeScanError(
         'A4_NOT_DETECTED',
@@ -45,15 +49,21 @@ function runMeasurementPipeline(imageData: ImageData, footSide: 'left' | 'right'
     }
 
     // Step 2: Perspective correction (warpPerspective homography)
+    console.log('[CV Worker] Step 2: perspective correction...')
     const { rectified: r, pixelsPerMm } = applyPerspectiveCorrection(cv, mat, corners)
     rectified = r
+    console.log('[CV Worker] Step 2 done, pixelsPerMm:', pixelsPerMm)
 
     // Step 3: Calibration accuracy
+    console.log('[CV Worker] Step 3: calibration accuracy...')
     const accuracyMm = computeCalibrationAccuracy(corners, pixelsPerMm)
     const confidence = accuracyToConfidence(accuracyMm)
+    console.log('[CV Worker] Step 3 done, accuracy:', accuracyMm, 'confidence:', confidence)
 
     // Step 4: Foot contour extraction (on rectified image)
+    console.log('[CV Worker] Step 4: foot contour...')
     const contourPoints = extractFootContour(cv, rectified)
+    console.log('[CV Worker] Step 4 done, points:', contourPoints?.length ?? 'null')
     if (!contourPoints) {
       return makeScanError(
         'FOOT_NOT_DETECTED',

@@ -4,61 +4,25 @@
  * All Mats are deleted in try/finally — no exceptions.
  */
 
-export function extractFootContour(
+// Find largest contour in a valid area range from a binary mask
+function findLargestFootContour(
   cv: any,
-  rectifiedMat: any
+  mask: any,
+  totalArea: number
 ): Array<{ x: number; y: number }> | null {
-  let hsv: any, skinMaskLow: any, skinMaskHigh: any, skinMask: any
-  let sockMask: any, combined: any, kernel5: any, kernel3: any
   let contours: any, hierarchy: any
-
   try {
-    hsv = new cv.Mat()
-    cv.cvtColor(rectifiedMat, hsv, cv.COLOR_RGBA2HSV)
-
-    // Skin tone masks — two hue ranges (0-30 and 160-180) combined
-    skinMaskLow = new cv.Mat()
-    skinMaskHigh = new cv.Mat()
-    skinMask = new cv.Mat()
-    const skinLow1 = new cv.Scalar(0, 20, 70, 0)
-    const skinHigh1 = new cv.Scalar(30, 255, 255, 255)
-    const skinLow2 = new cv.Scalar(160, 20, 70, 0)
-    const skinHigh2 = new cv.Scalar(180, 255, 255, 255)
-    cv.inRange(hsv, skinLow1, skinHigh1, skinMaskLow)
-    cv.inRange(hsv, skinLow2, skinHigh2, skinMaskHigh)
-    cv.bitwise_or(skinMaskLow, skinMaskHigh, skinMask)
-
-    // Dark sock mask — low saturation and value (black/dark)
-    sockMask = new cv.Mat()
-    const sockLow = new cv.Scalar(0, 0, 0, 0)
-    const sockHigh = new cv.Scalar(180, 50, 80, 255)
-    cv.inRange(hsv, sockLow, sockHigh, sockMask)
-
-    // Combine masks
-    combined = new cv.Mat()
-    cv.bitwise_or(skinMask, sockMask, combined)
-
-    // Morphological cleanup: MORPH_CLOSE 5x5 (fill gaps), then MORPH_OPEN 3x3 (remove noise)
-    kernel5 = cv.Mat.ones(5, 5, cv.CV_8U)
-    kernel3 = cv.Mat.ones(3, 3, cv.CV_8U)
-    const anchor = new cv.Point(-1, -1)
-    cv.morphologyEx(combined, combined, cv.MORPH_CLOSE, kernel5, anchor, 2)
-    cv.morphologyEx(combined, combined, cv.MORPH_OPEN, kernel3, anchor, 1)
-
-    // Find contours
     contours = new cv.MatVector()
     hierarchy = new cv.Mat()
-    cv.findContours(combined, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-    // Find largest contour within valid area range (5-40% of image)
-    const totalArea = rectifiedMat.rows * rectifiedMat.cols
     let bestContour: any = null
     let bestArea = 0
 
     for (let i = 0; i < contours.size(); i++) {
       const c = contours.get(i)
       const area = cv.contourArea(c)
-      if (area >= totalArea * 0.05 && area <= totalArea * 0.40 && area > bestArea) {
+      if (area >= totalArea * 0.03 && area <= totalArea * 0.50 && area > bestArea) {
         bestArea = area
         bestContour = c
       }
@@ -66,17 +30,114 @@ export function extractFootContour(
 
     if (!bestContour) return null
 
-    // Extract contour points from data32S array
     const pts: Array<{ x: number; y: number }> = []
     for (let i = 0; i < bestContour.data32S.length; i += 2) {
       pts.push({ x: bestContour.data32S[i], y: bestContour.data32S[i + 1] })
     }
     return pts
   } finally {
-    const safeDelete = (m: any) => {
-      try { if (m && !m.isDeleted?.()) m.delete() } catch {}
-    }
-    ;[hsv, skinMaskLow, skinMaskHigh, skinMask, sockMask, combined,
-      kernel5, kernel3, contours, hierarchy].forEach(safeDelete)
+    const safeDelete = (m: any) => { try { if (m && !m.isDeleted?.()) m.delete() } catch {} }
+    ;[contours, hierarchy].forEach(safeDelete)
   }
+}
+
+// Strategy 1: Non-paper detection with multi-threshold
+// Paper is the brightest region (~230+). Foot/sock is darker.
+// Uses heavy blur to smooth out printed text, then tries thresholds from high to low.
+function detectViaNonPaper(
+  cv: any,
+  rectifiedMat: any,
+  totalArea: number
+): Array<{ x: number; y: number }> | null {
+  let gray: any, blurred: any, binary: any, kernel: any
+  try {
+    gray = new cv.Mat()
+    blurred = new cv.Mat()
+    binary = new cv.Mat()
+
+    cv.cvtColor(rectifiedMat, gray, cv.COLOR_RGBA2GRAY)
+    // Heavy blur (21x21) smooths out printed text so only the foot shape remains
+    cv.GaussianBlur(gray, blurred, new cv.Size(21, 21), 0)
+
+    kernel = cv.Mat.ones(7, 7, cv.CV_8U)
+
+    // Try thresholds from high to low:
+    // 220 = only very bright paper excluded (catches light socks ~180-210)
+    // 210 = medium
+    // 200 = catches darker socks
+    // 190 = aggressive
+    const thresholds = [220, 210, 200, 190]
+    for (const thresh of thresholds) {
+      cv.threshold(blurred, binary, thresh, 255, cv.THRESH_BINARY)
+      // Invert: pixels ABOVE threshold (paper) → black, below (foot) → white
+      cv.bitwise_not(binary, binary)
+
+      // Morphological close (dilate then erode) — fills gaps in foot region
+      cv.dilate(binary, binary, kernel)
+      cv.dilate(binary, binary, kernel)
+      cv.dilate(binary, binary, kernel)
+      cv.erode(binary, binary, kernel)
+      cv.erode(binary, binary, kernel)
+      cv.erode(binary, binary, kernel)
+
+      const result = findLargestFootContour(cv, binary, totalArea)
+      if (result) return result
+    }
+
+    return null
+  } finally {
+    const safeDelete = (m: any) => { try { if (m && !m.isDeleted?.()) m.delete() } catch {} }
+    ;[gray, blurred, binary, kernel].forEach(safeDelete)
+  }
+}
+
+// Strategy 2: Edge-based detection (Canny)
+// Finds foot outline via edges, then fills to create a solid blob.
+// Works even when foot color is close to paper color.
+function detectViaEdges(
+  cv: any,
+  rectifiedMat: any,
+  totalArea: number
+): Array<{ x: number; y: number }> | null {
+  let gray: any, blurred: any, edges: any, dilateKernel: any, erodeKernel: any
+  try {
+    gray = new cv.Mat()
+    blurred = new cv.Mat()
+    edges = new cv.Mat()
+
+    cv.cvtColor(rectifiedMat, gray, cv.COLOR_RGBA2GRAY)
+    cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0)
+    cv.Canny(blurred, edges, 30, 100)
+
+    // Heavy dilation to connect edge fragments into solid foot shape
+    dilateKernel = cv.Mat.ones(11, 11, cv.CV_8U)
+    cv.dilate(edges, edges, dilateKernel)
+    cv.dilate(edges, edges, dilateKernel)
+    cv.dilate(edges, edges, dilateKernel)
+    cv.dilate(edges, edges, dilateKernel)
+
+    // Erode back to approximate original size
+    erodeKernel = cv.Mat.ones(9, 9, cv.CV_8U)
+    cv.erode(edges, edges, erodeKernel)
+    cv.erode(edges, edges, erodeKernel)
+    cv.erode(edges, edges, erodeKernel)
+    cv.erode(edges, edges, erodeKernel)
+
+    return findLargestFootContour(cv, edges, totalArea)
+  } finally {
+    const safeDelete = (m: any) => { try { if (m && !m.isDeleted?.()) m.delete() } catch {} }
+    ;[gray, blurred, edges, dilateKernel, erodeKernel].forEach(safeDelete)
+  }
+}
+
+export function extractFootContour(
+  cv: any,
+  rectifiedMat: any
+): Array<{ x: number; y: number }> | null {
+  const totalArea = rectifiedMat.rows * rectifiedMat.cols
+
+  // Try brightness-based first (fast, works for most sock/skin colors)
+  // Then edge-based fallback (handles light socks on white paper)
+  return detectViaNonPaper(cv, rectifiedMat, totalArea)
+    ?? detectViaEdges(cv, rectifiedMat, totalArea)
 }

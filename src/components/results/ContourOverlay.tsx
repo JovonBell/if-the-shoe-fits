@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import type { MeasurementResult } from '@/lib/cv/types'
+import type { MeasurementResult, FootLandmarks } from '@/lib/cv/types'
 
 interface Props {
   imageData: ImageData
@@ -10,10 +10,8 @@ interface Props {
 
 /** Compute measurement line endpoints from contour extrema */
 function computeMeasurementLines(pts: Array<{ x: number; y: number }>) {
-  // Length line: heel-to-toe = min Y to max Y (vertical span)
   let minY = Infinity, maxY = -Infinity
   let minYPt = pts[0], maxYPt = pts[0]
-  // Width line: widest horizontal span
   let minX = Infinity, maxX = -Infinity
   let minXPt = pts[0], maxXPt = pts[0]
 
@@ -24,8 +22,6 @@ function computeMeasurementLines(pts: Array<{ x: number; y: number }>) {
     if (p.x > maxX) { maxX = p.x; maxXPt = p }
   }
 
-  // For width: find the widest horizontal span at the widest row
-  // Use the midpoint Y of the min/max X points for a clean horizontal line
   const widthMidY = (minXPt.y + maxXPt.y) / 2
 
   return {
@@ -55,40 +51,34 @@ function drawMeasurementLine(
   ctx.lineWidth = 1.5
   ctx.setLineDash([4, 3])
 
-  // Main line
   ctx.beginPath()
   ctx.moveTo(start.x, start.y)
   ctx.lineTo(end.x, end.y)
   ctx.stroke()
 
-  // End caps (perpendicular tick marks)
   ctx.setLineDash([])
   const dx = end.x - start.x
   const dy = end.y - start.y
   const len = Math.sqrt(dx * dx + dy * dy)
-  const nx = -dy / len  // perpendicular normal
+  const nx = -dy / len
   const ny = dx / len
 
-  // Start cap
   ctx.beginPath()
   ctx.moveTo(start.x + nx * capSize, start.y + ny * capSize)
   ctx.lineTo(start.x - nx * capSize, start.y - ny * capSize)
   ctx.stroke()
 
-  // End cap
   ctx.beginPath()
   ctx.moveTo(end.x + nx * capSize, end.y + ny * capSize)
   ctx.lineTo(end.x - nx * capSize, end.y - ny * capSize)
   ctx.stroke()
 
-  // Label at midpoint
   const midX = (start.x + end.x) / 2
   const midY = (start.y + end.y) / 2
   ctx.font = 'bold 13px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
 
-  // Background pill for readability
   const textMetrics = ctx.measureText(label)
   const padding = 4
   ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
@@ -104,6 +94,24 @@ function drawMeasurementLine(
   ctx.restore()
 }
 
+/** Draw a landmark dot with optional label */
+function drawLandmarkDot(
+  ctx: CanvasRenderingContext2D,
+  point: { x: number; y: number },
+  color: string,
+  radius: number = 6
+) {
+  ctx.save()
+  ctx.beginPath()
+  ctx.arc(point.x, point.y, radius, 0, Math.PI * 2)
+  ctx.fillStyle = color
+  ctx.fill()
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'
+  ctx.lineWidth = 1.5
+  ctx.stroke()
+  ctx.restore()
+}
+
 export function ContourOverlay({ imageData, measurements }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -111,8 +119,6 @@ export function ContourOverlay({ imageData, measurements }: Props) {
     const canvas = canvasRef.current
     if (!canvas || !measurements.contour_points?.length) return
 
-    // CRITICAL: Canvas must match imageData dimensions exactly
-    // to avoid coordinate space mismatch (RESEARCH.md Pitfall 4)
     canvas.width = imageData.width
     canvas.height = imageData.height
     const ctx = canvas.getContext('2d')
@@ -123,22 +129,21 @@ export function ContourOverlay({ imageData, measurements }: Props) {
 
     const pts = measurements.contour_points
 
-    // Draw contour overlay -- maroon semi-transparent fill
+    // Draw contour overlay — maroon semi-transparent fill
     ctx.beginPath()
     ctx.moveTo(pts[0].x, pts[0].y)
     for (const p of pts.slice(1)) ctx.lineTo(p.x, p.y)
     ctx.closePath()
-    ctx.fillStyle = 'rgba(133, 3, 33, 0.15)'  // maroon at 15% opacity
-    ctx.strokeStyle = '#850321'                  // solid maroon stroke
+    ctx.fillStyle = 'rgba(133, 3, 33, 0.15)'
+    ctx.strokeStyle = '#850321'
     ctx.lineWidth = 2
     ctx.fill()
     ctx.stroke()
 
-    // Draw measurement lines (locked decision: "with measurement lines")
+    // Draw measurement lines
     const lines = computeMeasurementLines(pts)
     const lineColor = '#850321'
 
-    // Length line (vertical: heel to toe)
     drawMeasurementLine(
       ctx,
       lines.length.start,
@@ -147,7 +152,6 @@ export function ContourOverlay({ imageData, measurements }: Props) {
       lineColor
     )
 
-    // Width line (horizontal: widest span)
     drawMeasurementLine(
       ctx,
       lines.width.start,
@@ -155,6 +159,18 @@ export function ContourOverlay({ imageData, measurements }: Props) {
       `${measurements.width_mm.toFixed(0)} mm`,
       lineColor
     )
+
+    // Draw landmark dots
+    if (measurements.landmarks) {
+      const lm = measurements.landmarks
+      const dotColor = '#a855f7' // purple to match reference
+      drawLandmarkDot(ctx, lm.toe_tip, dotColor, 7)
+      drawLandmarkDot(ctx, lm.heel_center, dotColor, 7)
+      drawLandmarkDot(ctx, lm.ball_inner, dotColor, 6)
+      drawLandmarkDot(ctx, lm.ball_outer, dotColor, 6)
+      drawLandmarkDot(ctx, lm.arch_inner, dotColor, 5)
+      drawLandmarkDot(ctx, lm.arch_outer, dotColor, 5)
+    }
   }, [imageData, measurements])
 
   return (

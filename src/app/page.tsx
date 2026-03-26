@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCamera } from '@/hooks/useCamera'
 import { CVWorkerBridge } from '@/lib/cv/worker-bridge'
 import { normalizeOrientation } from '@/lib/cv/exif'
@@ -28,29 +28,45 @@ export default function Home() {
   const bridgeRef = useRef<CVWorkerBridge | null>(null)
   const { videoRef, startCamera, capturePhoto, stopCamera } = useCamera()
 
-  // Initialize CV worker on mount
-  useEffect(() => {
-    const bridge = new CVWorkerBridge()
-    bridgeRef.current = bridge
-
-    const interval = setInterval(() => {
-      if (bridge.isReady) {
-        setWorkerReady(true)
-        clearInterval(interval)
-      }
-    }, 100)
-
-    return () => {
-      clearInterval(interval)
-      bridge.terminate()
-    }
+  // Logging helper (console only in production)
+  const addLog = useCallback((msg: string) => {
+    console.log(`[App] ${msg}`)
   }, [])
 
+  // Initialize CV worker on mount
+  useEffect(() => {
+    addLog('Mounting — creating CV worker...')
+    try {
+      const bridge = new CVWorkerBridge()
+      bridgeRef.current = bridge
+      addLog('Worker created OK')
+
+      const interval = setInterval(() => {
+        if (bridge.isReady) {
+          setWorkerReady(true)
+          clearInterval(interval)
+          addLog('Worker READY')
+        }
+      }, 100)
+
+      return () => {
+        clearInterval(interval)
+        bridge.terminate()
+      }
+    } catch (err) {
+      addLog(`Worker FAILED: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }, [addLog])
+
   const handleStart = useCallback(async () => {
+    addLog('handleStart called — switching to camera step')
     setStep('camera')
     try {
+      addLog('Calling startCamera...')
       await startCamera()
+      addLog('Camera started OK')
     } catch (err) {
+      addLog(`Camera error: ${err instanceof Error ? err.message : String(err)}`)
       const isDenied =
         err instanceof DOMException &&
         (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
