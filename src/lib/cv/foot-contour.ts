@@ -309,46 +309,57 @@ function detectViaFloodFill(
   rectifiedMat: any,
   totalArea: number
 ): Array<{ x: number; y: number }> | null {
-  let gray: any, filled: any, footMask: any, kernel: any
+  let gray: any, footMask: any, kernel: any
   try {
     gray = new cv.Mat()
     cv.cvtColor(rectifiedMat, gray, cv.COLOR_RGBA2GRAY)
 
-    // Blur to remove noise but preserve sock/paper boundary
+    // Minimal blur: preserve the sock/paper brightness boundary
     const blurred = new cv.Mat()
-    cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0)
+    cv.GaussianBlur(gray, blurred, new cv.Size(3, 3), 0)
     gray.delete()
     gray = blurred
 
-    filled = gray.clone()
-    const rows = filled.rows
-    const cols = filled.cols
+    const rows = gray.rows
+    const cols = gray.cols
+    const totalPx = rows * cols
 
-    // Flood fill from all 4 corners with tolerance 25
-    // Paper background (white, ~240) spreads freely; sock/foot acts as barrier
-    const fillColor = new cv.Scalar(128)
-    const loDiff = new cv.Scalar(25)
-    const upDiff = new cv.Scalar(25)
-    const rect = new cv.Rect(0, 0, 1, 1)
-    const corners = [[0, 0], [cols - 1, 0], [0, rows - 1], [cols - 1, rows - 1]]
-    for (const [cx, cy] of corners) {
-      try {
-        cv.floodFill(filled, new cv.Mat(), new cv.Point(cx, cy), fillColor, rect, loDiff, upDiff, 4)
-      } catch { /* ignore if corner pixel already filled */ }
+    // Pure-JS flood fill — avoids OpenCV.js binding uncertainty with floodFill mask params.
+    // 4-connected BFS from each corner; each pixel compared to its seed (fixed-range, tol=12).
+    // tol=12: paper is uniform (~238-242), sock boundary typically differs by 15-20 → fill stops.
+    const FILL = 64
+    const TOL = 12
+    const buf = new Uint8Array(gray.data.buffer, gray.data.byteOffset, totalPx)
+    const filled = new Uint8Array(totalPx)  // 0=unfilled, 1=paper
+    const seedCorners = [0, cols - 1, (rows - 1) * cols, (rows - 1) * cols + cols - 1]
+
+    for (const seedIdx of seedCorners) {
+      if (filled[seedIdx]) continue
+      const seedVal = buf[seedIdx]
+      const queue: number[] = [seedIdx]
+      let head = 0
+      while (head < queue.length) {
+        const idx = queue[head++]
+        if (filled[idx]) continue
+        if (Math.abs(buf[idx] - seedVal) > TOL) continue
+        filled[idx] = 1
+        const r = Math.floor(idx / cols)
+        const c = idx % cols
+        if (r > 0)      queue.push(idx - cols)
+        if (r < rows-1) queue.push(idx + cols)
+        if (c > 0)      queue.push(idx - 1)
+        if (c < cols-1) queue.push(idx + 1)
+      }
     }
 
     // Foot mask: pixels NOT filled (not paper) → binary white
     footMask = new cv.Mat(rows, cols, cv.CV_8UC1, new cv.Scalar(0))
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const v = filled.ucharAt(r, c)
-        if (v !== 128) {
-          footMask.ucharPtr(r, c)[0] = 255
-        }
-      }
+    const mData = footMask.data
+    for (let i = 0; i < totalPx; i++) {
+      if (!filled[i]) mData[i] = 255
     }
 
-    // Close and dilate to fill internal holes
+    // Close and dilate to fill internal holes in the foot blob
     kernel = cv.Mat.ones(15, 15, cv.CV_8U)
     cv.morphologyEx(footMask, footMask, cv.MORPH_CLOSE, kernel)
     cv.dilate(footMask, footMask, kernel)
@@ -358,7 +369,7 @@ function detectViaFloodFill(
     return null
   } finally {
     const safeDelete = (m: any) => { try { if (m && !m.isDeleted?.()) m.delete() } catch {} }
-    ;[gray, filled, footMask, kernel].forEach(safeDelete)
+    ;[gray, footMask, kernel].forEach(safeDelete)
   }
 }
 
@@ -432,5 +443,7 @@ export function extractFootContour(
 
   // Strategy 4: Flood-fill exclusion — fill paper from corners, invert to find foot
   console.log('[Contour] Trying strategy 4: flood-fill')
-  return detectViaFloodFill(cv, rectifiedMat, totalArea)
+  const floodResult = detectViaFloodFill(cv, rectifiedMat, totalArea)
+  if (floodResult) console.log('[Contour] Strategy 4 succeeded')
+  return floodResult
 }

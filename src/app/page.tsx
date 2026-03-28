@@ -99,7 +99,7 @@ export default function Home() {
       if (!scanResult.success) {
         const messages: Record<string, string> = {
           A4_NOT_DETECTED: 'Paper not found. Place your US Letter paper on a dark surface with all 4 corners clearly visible.',
-          FOOT_NOT_DETECTED: 'Foot not found. Make sure your foot covers most of the paper with the heel at the bottom edge.',
+          FOOT_NOT_DETECTED: 'Foot not found. Try scanning barefoot — white or light-colored socks can blend with the paper. Heel at the bottom edge, toes up.',
           INVALID_MEASUREMENTS: scanResult.error.message,
           CV_ERROR: 'Processing failed. Please try again.',
         }
