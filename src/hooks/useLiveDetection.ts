@@ -4,12 +4,15 @@
  * Live foot detection on camera feed.
  *
  * Algorithm:
- *  1. 92nd-percentile brightness — ensures we sample actual paper (not skin/carpet)
- *  2. Strict paper pixels: brightness ≥ paperRef × 0.88 (excludes ankle skin ~140-180)
- *  3. Paper bbox computed ONLY from strict paper pixels
+ *  1. 99th-percentile brightness → lands on paper (paper is the brightest object in scene)
+ *  2. Paper detection via connected-component of near-max pixels (≥ paperRef × 0.93).
+ *     Connected component prevents scattered bright floor pixels from inflating the bbox.
+ *  3. Validate paper bbox: correct size (10–88% of frame), aspect ratio (0.45–1.65),
+ *     and fill density (≥ 30% of bbox pixels are "paper" — rejects sparse bright spots).
  *  4. Foot candidates: within INSET paper bbox, pixels < paperRef × 0.76
- *  5. Dilate candidates to fill sock-texture gaps
- *  6. Draw OUTLINE (stroke) of foot blob in brand color — not a filled blob
+ *  5. Extend detection 25% below paper bottom for heel visibility
+ *  6. Dilate candidates, then keep only largest connected blob (removes sock-logo artifacts)
+ *  7. Draw OUTLINE (stroke) of foot blob in brand color — not a filled blob
  */
 
 import { useEffect, useRef, useState } from 'react'
@@ -17,16 +20,15 @@ import { useEffect, useRef, useState } from 'react'
 const SAMPLE_W           = 240   // higher resolution → smoother outline, better detection
 const DETECT_INTERVAL    = 200   // ms
 
-const PAPER_PERCENTILE   = 0.92  // 92nd-pctile lands on paper pixels, not skin
-const PAPER_STRICT_RATIO = 0.88  // brightness > paperRef×0.88 → definite paper (excludes ankle)
-const PAPER_BBOX_RATIO   = 0.85  // loose threshold for paperCoverage count
+const PAPER_PERCENTILE   = 0.99  // 99th-pctile → lands on paper (paper is brightest in scene)
+const PAPER_STRICT_RATIO = 0.93  // within 7% of max brightness = paper; light floor (~200) excluded
 const FOOT_RATIO         = 0.76  // within paper: pixel < paperRef×0.76 → foot candidate
-const MIN_PAPER_REF      = 170   // require actual paper brightness; 100 was too low (included skin)
+const MIN_PAPER_REF      = 185   // require actual white paper brightness (reject dim/no-paper scenes)
 const MIN_FOOT_COVERAGE  = 0.01  // ≥1% of frame
 const MAX_FOOT_COVERAGE  = 0.45  // ≤45% of frame
-const MIN_PAPER_COVERAGE = 0.06  // ≥6% of frame looks like paper
+const MIN_PAPER_COVERAGE = 0.05  // ≥5% of frame is the paper component
 const DILATION           = 4     // fill sock-texture gaps
-const EDGE_INSET         = DILATION + 2  // inset from strict paper bbox before foot detection
+const EDGE_INSET         = DILATION + 4  // 8px inset from paper bbox before foot detection
 
 export function useLiveDetection(
   videoRef: React.RefObject<HTMLVideoElement | null>,
@@ -84,37 +86,80 @@ export function useLiveDetection(
         lumBuf[i] = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2]
       }
 
-      // 92nd-percentile — lands on paper pixels in a scene with dark background
+      // 99th-percentile brightness → should land on the white paper when paper is in frame
       sortBuf!.set(lumBuf)
       sortBuf!.sort()
       const paperRef = sortBuf![Math.floor(total * PAPER_PERCENTILE)]
 
       if (paperRef < MIN_PAPER_REF) {
-        // No paper visible — scene too dark
+        // No bright white surface visible — scene too dark or no paper
         if (stateRef.current.footDetected) { stateRef.current.footDetected = false; setFootDetected(false) }
         overlay.getContext('2d')?.clearRect(0, 0, overlay.width, overlay.height)
         return
       }
 
-      const strictThresh = paperRef * PAPER_STRICT_RATIO  // definite paper pixels
-      const looseThresh  = paperRef * PAPER_BBOX_RATIO    // for paperCoverage count
+      const strictThresh = paperRef * PAPER_STRICT_RATIO  // within 7% of max = paper
       const footThresh   = paperRef * FOOT_RATIO
 
-      // Pass 1: paper bbox from STRICT paper pixels only (excludes ankle skin 140-180)
-      let pMinX = sW, pMaxX = 0, pMinY = sH, pMaxY = 0, looseCount = 0
-      for (let y = 0; y < sH; y++) {
-        for (let x = 0; x < sW; x++) {
-          const l = lumBuf![y * sW + x]
-          if (l > looseThresh) looseCount++
-          if (l > strictThresh) {
-            if (x < pMinX) pMinX = x; if (x > pMaxX) pMaxX = x
-            if (y < pMinY) pMinY = y; if (y > pMaxY) pMaxY = y
+      // Pass 1: find paper via largest connected component of near-max brightness pixels.
+      // This prevents scattered bright floor pixels from inflating the paper bbox.
+      let pMinX = sW, pMaxX = 0, pMinY = sH, pMaxY = 0
+      let paperCoverage = 0
+
+      {
+        const labels = new Uint8Array(total)  // 0 = unlabeled
+        const compSizes: number[] = []
+
+        for (let i = 0; i < total; i++) {
+          if (lumBuf![i] <= strictThresh || labels[i]) continue
+          const id = compSizes.length + 1  // 1-indexed
+          compSizes.push(0)
+          const queue = [i]
+          let head = 0
+          while (head < queue.length) {
+            const idx = queue[head++]
+            if (labels[idx]) continue
+            labels[idx] = id
+            compSizes[id - 1]++
+            const r = Math.floor(idx / sW), c = idx % sW
+            if (r > 0      && lumBuf![idx - sW] > strictThresh && !labels[idx - sW]) queue.push(idx - sW)
+            if (r < sH - 1 && lumBuf![idx + sW] > strictThresh && !labels[idx + sW]) queue.push(idx + sW)
+            if (c > 0      && lumBuf![idx - 1]  > strictThresh && !labels[idx - 1])  queue.push(idx - 1)
+            if (c < sW - 1 && lumBuf![idx + 1]  > strictThresh && !labels[idx + 1])  queue.push(idx + 1)
           }
         }
-      }
-      const paperCoverage = looseCount / total
 
-      if (pMaxX < pMinX || pMaxY < pMinY || paperCoverage < MIN_PAPER_COVERAGE) {
+        if (compSizes.length === 0) {
+          if (stateRef.current.footDetected) { stateRef.current.footDetected = false; setFootDetected(false) }
+          overlay.getContext('2d')?.clearRect(0, 0, overlay.width, overlay.height)
+          return
+        }
+
+        const bestId = compSizes.indexOf(Math.max(...compSizes)) + 1
+        paperCoverage = compSizes[bestId - 1] / total
+
+        for (let i = 0; i < total; i++) {
+          if (labels[i] !== bestId) continue
+          const r = Math.floor(i / sW), c = i % sW
+          if (c < pMinX) pMinX = c; if (c > pMaxX) pMaxX = c
+          if (r < pMinY) pMinY = r; if (r > pMaxY) pMaxY = r
+        }
+      }
+
+      // Validate paper bbox: correct size, aspect ratio, and fill density
+      const bboxW = pMaxX - pMinX
+      const bboxH = pMaxY - pMinY
+      const bboxAspect = bboxW / Math.max(1, bboxH)
+      // fillRatio: paper component pixels / bbox area — rejects scattered bright spots
+      const fillRatio = (paperCoverage * total) / Math.max(1, bboxW * bboxH)
+
+      if (
+        paperCoverage < MIN_PAPER_COVERAGE ||
+        bboxW < sW * 0.10 || bboxH < sH * 0.10 ||     // paper must cover ≥10% of frame
+        bboxW > sW * 0.88 || bboxH > sH * 0.93 ||     // but not the whole frame (= floor)
+        bboxAspect < 0.45 || bboxAspect > 1.65 ||     // US Letter portrait/landscape ± generous
+        fillRatio < 0.30                               // must be a solid rectangle, not scattered
+      ) {
         if (stateRef.current.footDetected) { stateRef.current.footDetected = false; setFootDetected(false) }
         overlay.getContext('2d')?.clearRect(0, 0, overlay.width, overlay.height)
         return

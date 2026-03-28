@@ -24,15 +24,16 @@ function sortCornersClockwise(
   return [topLeft, topRight, bottomRight, bottomLeft]
 }
 
-// Aspect ratio tolerance for US Letter (0.774) — allows up to ~20% deviation for tilted/distorted captures
-const ASPECT_RATIO_TOLERANCE = 0.20
+// Aspect ratio tolerance for US Letter (0.774) — allows up to ~18% deviation for tilted/distorted captures
+const ASPECT_RATIO_TOLERANCE = 0.18
 
 // Try to find a 4-corner quad from contours using approxPolyDP (strict)
 function findBestQuadStrict(
   cv: any,
   contours: any,
   minArea: number,
-  epsilon: number
+  epsilon: number,
+  maxArea = Infinity
 ): Array<{ x: number; y: number }> | null {
   let bestQuad: Array<{ x: number; y: number }> | null = null
   let bestArea = 0
@@ -40,7 +41,7 @@ function findBestQuadStrict(
   for (let i = 0; i < contours.size(); i++) {
     const contour = contours.get(i)
     const area = cv.contourArea(contour)
-    if (area < minArea) continue
+    if (area < minArea || area > maxArea) continue
 
     const peri = cv.arcLength(contour, true)
     const approx = new cv.Mat()
@@ -73,7 +74,8 @@ function findBestQuadStrict(
 function findBestQuadRect(
   cv: any,
   contours: any,
-  minArea: number
+  minArea: number,
+  maxArea = Infinity
 ): Array<{ x: number; y: number }> | null {
   let bestQuad: Array<{ x: number; y: number }> | null = null
   let bestArea = 0
@@ -81,7 +83,7 @@ function findBestQuadRect(
   for (let i = 0; i < contours.size(); i++) {
     const contour = contours.get(i)
     const area = cv.contourArea(contour)
-    if (area < minArea) continue
+    if (area < minArea || area > maxArea) continue
 
     // minAreaRect fits a rotated rectangle to any contour — no need for 4 clean corners
     const rect = cv.minAreaRect(contour)
@@ -139,11 +141,13 @@ function detectViaCanny(
 
     cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-    const minArea = imageArea * 0.05
+    // Paper must be ≥12% of frame (prevents tiny noise quads) and ≤85% (not the whole floor)
+    const minArea = imageArea * 0.12
+    const maxArea = imageArea * 0.85
     // Try strict polygon, then looser, then rotated rect fallback
-    return findBestQuadStrict(cv, contours, minArea, 0.02)
-      ?? findBestQuadStrict(cv, contours, minArea, 0.04)
-      ?? findBestQuadRect(cv, contours, minArea)
+    return findBestQuadStrict(cv, contours, minArea, 0.02, maxArea)
+      ?? findBestQuadStrict(cv, contours, minArea, 0.04, maxArea)
+      ?? findBestQuadRect(cv, contours, minArea, maxArea)
   } finally {
     const safeDelete = (m: any) => { try { if (m && !m.isDeleted?.()) m.delete() } catch {} }
     ;[blurred, edges, contours, hierarchy, kernel].forEach(safeDelete)
@@ -184,11 +188,12 @@ function detectViaThreshold(
 
       cv.findContours(binary, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-      const minArea = imageArea * 0.05
-      const quad = findBestQuadStrict(cv, contours, minArea, 0.04)
-        ?? findBestQuadStrict(cv, contours, minArea, 0.06)
-        ?? findBestQuadStrict(cv, contours, minArea, 0.08)
-        ?? findBestQuadRect(cv, contours, minArea)
+      const minArea = imageArea * 0.12
+      const maxArea = imageArea * 0.85
+      const quad = findBestQuadStrict(cv, contours, minArea, 0.04, maxArea)
+        ?? findBestQuadStrict(cv, contours, minArea, 0.06, maxArea)
+        ?? findBestQuadStrict(cv, contours, minArea, 0.08, maxArea)
+        ?? findBestQuadRect(cv, contours, minArea, maxArea)
       if (quad) {
         kernel.delete()
         return quad
