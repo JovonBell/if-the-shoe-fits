@@ -71,14 +71,16 @@ export function CameraStep({
           )}
         </div>
 
-        {/* Capture button */}
-        <div className="absolute bottom-5 left-0 right-0 flex flex-col items-center gap-2 pointer-events-none">
+        {/* Capture button — container must NOT have pointer-events-none on iOS Safari:
+            WebKit does not recurse hit-testing into children with pointer-events:auto
+            when an absolutely-positioned ancestor has pointer-events:none. */}
+        <div className="absolute bottom-5 left-0 right-0 flex flex-col items-center gap-2">
           <button
             type="button"
             onClick={onCapture}
             disabled={buttonDisabled}
             aria-label="Capture photo"
-            className="pointer-events-auto w-[72px] h-[72px] rounded-full flex items-center justify-center shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-[72px] h-[72px] rounded-full flex items-center justify-center shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ backgroundColor: capturing ? '#1d4ed8' : footDetected ? '#850321' : '#6b7280' }}
           >
             <div className="w-[58px] h-[58px] rounded-full border-2 border-white/80" />

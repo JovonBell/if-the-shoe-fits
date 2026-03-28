@@ -14,7 +14,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-const SAMPLE_W           = 160
+const SAMPLE_W           = 240   // higher resolution → smoother outline, better detection
 const DETECT_INTERVAL    = 200   // ms
 
 const PAPER_PERCENTILE   = 0.92  // 92nd-pctile lands on paper pixels, not skin
@@ -120,31 +120,36 @@ export function useLiveDetection(
         return
       }
 
-      // Inset bbox to avoid edge contamination from ankle/shadows bleeding in from bottom
+      // Inset bbox to avoid edge contamination (left/right/top only — bottom allows heel)
       const iMinX = Math.min(pMinX + EDGE_INSET, pMaxX)
       const iMaxX = Math.max(pMaxX - EDGE_INSET, pMinX)
       const iMinY = Math.min(pMinY + EDGE_INSET, pMaxY)
       const iMaxY = Math.max(pMaxY - EDGE_INSET, pMinY)
 
-      // Pass 2: foot candidate pixels within INSET paper region
+      // Extend detection 25% of paper height below the paper edge for heel visibility
+      const heelExtend = Math.round((pMaxY - pMinY) * 0.25)
+      const drawMaxY = Math.min(pMaxY + heelExtend, sH - 1)
+
+      // Pass 2: foot candidate pixels — count only within paper (for detection threshold),
+      //         but mark below paper too (for heel drawing)
       const footMask = new Uint8Array(total)
       let footCount = 0
-      for (let y = iMinY; y <= iMaxY; y++) {
+      for (let y = iMinY; y <= drawMaxY; y++) {
         for (let x = iMinX; x <= iMaxX; x++) {
           if (lumBuf![y * sW + x] < footThresh) {
             footMask[y * sW + x] = 1
-            footCount++
+            if (y <= iMaxY) footCount++
           }
         }
       }
 
-      // Pass 3: dilate foot mask → solid blob (fills sock-texture gaps)
+      // Pass 3: dilate foot mask → solid blob (fills sock-texture gaps, merges heel)
       const dilatedMask = new Uint8Array(total)
-      for (let y = iMinY; y <= iMaxY; y++) {
+      for (let y = iMinY; y <= drawMaxY; y++) {
         for (let x = iMinX; x <= iMaxX; x++) {
           outer: for (let dy = -DILATION; dy <= DILATION; dy++) {
             const ny = y + dy
-            if (ny < iMinY || ny > iMaxY) continue
+            if (ny < iMinY || ny > drawMaxY) continue
             for (let dx = -DILATION; dx <= DILATION; dx++) {
               const nx = x + dx
               if (nx >= iMinX && nx <= iMaxX && footMask[ny * sW + nx]) {
@@ -152,6 +157,38 @@ export function useLiveDetection(
                 break outer
               }
             }
+          }
+        }
+      }
+
+      // Pass 3b: keep only the largest connected blob — removes sock-logo artifacts
+      {
+        const label = new Int32Array(total).fill(-1)
+        const blobSizes: number[] = []
+        for (let y = iMinY; y <= drawMaxY; y++) {
+          for (let x = iMinX; x <= iMaxX; x++) {
+            const i = y * sW + x
+            if (!dilatedMask[i] || label[i] >= 0) continue
+            const id = blobSizes.length
+            blobSizes.push(0)
+            const stack = [i]
+            while (stack.length) {
+              const idx = stack.pop()!
+              if (label[idx] >= 0) continue
+              label[idx] = id
+              blobSizes[id]++
+              const iy = Math.floor(idx / sW), ix = idx % sW
+              if (iy > iMinY && dilatedMask[idx - sW]) stack.push(idx - sW)
+              if (iy < drawMaxY && dilatedMask[idx + sW]) stack.push(idx + sW)
+              if (ix > iMinX && dilatedMask[idx - 1]) stack.push(idx - 1)
+              if (ix < iMaxX && dilatedMask[idx + 1]) stack.push(idx + 1)
+            }
+          }
+        }
+        if (blobSizes.length > 1) {
+          const best = blobSizes.indexOf(Math.max(...blobSizes))
+          for (let i = 0; i < total; i++) {
+            if (dilatedMask[i] && label[i] !== best) dilatedMask[i] = 0
           }
         }
       }
@@ -184,13 +221,14 @@ export function useLiveDetection(
       const mImg = mCtx.createImageData(sW, sH)
       const d = mImg.data
 
-      for (let y = iMinY; y <= iMaxY; y++) {
+      for (let y = iMinY; y <= drawMaxY; y++) {
         for (let x = iMinX; x <= iMaxX; x++) {
           const idx = y * sW + x
           if (!dilatedMask[idx]) continue
 
-          // Determine if this is an outline pixel (any 4-neighbor outside mask)
+          // Outline pixel: any 4-neighbor outside mask (or at boundary)
           const isOutline =
+            y === iMinY || y === drawMaxY || x === iMinX || x === iMaxX ||
             !dilatedMask[(y - 1) * sW + x] ||
             !dilatedMask[(y + 1) * sW + x] ||
             !dilatedMask[y * sW + (x - 1)] ||
@@ -209,7 +247,7 @@ export function useLiveDetection(
       // Upscale to display with smoothing, then apply blur for anti-aliased outline
       oCtx.imageSmoothingEnabled = true
       oCtx.imageSmoothingQuality = 'high'
-      oCtx.filter = 'blur(1.5px)'
+      oCtx.filter = 'blur(2px)'
       oCtx.drawImage(maskCanvas, 0, 0, dW, dH)
       oCtx.filter = 'none'
 

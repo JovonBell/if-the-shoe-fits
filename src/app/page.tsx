@@ -73,19 +73,30 @@ export default function Home() {
   }, [])
 
   const handleCapture = useCallback(async () => {
+    console.log('[Capture] Button tapped — workerReady:', workerReady, 'capturing:', capturing, 'bridge:', !!bridgeRef.current)
+
     if (!bridgeRef.current || !workerReady) {
+      console.log('[Capture] BLOCKED: worker not ready')
       setCameraError({ code: 'NOT_READY', message: 'Scanner is still initializing — please wait a moment and try again.' })
+      return
+    }
+    if (capturing) {
+      console.log('[Capture] BLOCKED: already capturing')
       return
     }
 
     setCameraError(null)
     setCapturing(true)
     setStep('processing')
+    console.log('[Capture] Step → processing')
 
     try {
       // Capture directly from canvas — no toBlob, no EXIF normalization needed for video frames
       const photoCanvas = capturePhoto()
+      console.log('[Capture] Photo captured:', photoCanvas.width, 'x', photoCanvas.height)
+
       const resizedImageData = resizeImageData(photoCanvas, 1200)
+      console.log('[Capture] Resized:', resizedImageData.width, 'x', resizedImageData.height)
 
       // Copy for display (process() may transfer the buffer)
       const imageCopy = new ImageData(new Uint8ClampedArray(resizedImageData.data), resizedImageData.width, resizedImageData.height)
@@ -94,7 +105,9 @@ export default function Home() {
       // Separate copy for processing
       const imageData = new ImageData(new Uint8ClampedArray(resizedImageData.data), resizedImageData.width, resizedImageData.height)
 
+      console.log('[Capture] Sending to CV worker...')
       const scanResult = await bridgeRef.current.process(imageData, currentSide)
+      console.log('[Capture] CV result:', scanResult.success, scanResult.success ? 'ok' : (scanResult as any).error?.code)
 
       if (!scanResult.success) {
         const messages: Record<string, string> = {
@@ -116,12 +129,14 @@ export default function Home() {
       setLatestResult(scanResult.data)
       setStep('results')
     } catch (err) {
-      console.error('[App] Capture error:', err)
+      console.error('[Capture] ERROR:', err)
       setCameraError({ code: 'CV_ERROR', message: 'Something went wrong. Please try again.' })
       setStep('camera')
+    } finally {
+      console.log('[Capture] Done')
+      setCapturing(false)
     }
-    setCapturing(false)
-  }, [workerReady, capturePhoto, currentSide, session])
+  }, [workerReady, capturing, capturePhoto, currentSide, session])
 
   const handleRetake = useCallback(() => {
     setLatestResult(null)
