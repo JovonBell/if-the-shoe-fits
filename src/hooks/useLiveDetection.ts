@@ -107,25 +107,27 @@ export function useLiveDetection(
       let paperCoverage = 0
 
       {
-        const labels = new Uint8Array(total)  // 0 = unlabeled
+        // Uint16Array: handles up to 65535 components (Uint8Array wraps at 256 → infinite loop)
+        const labels = new Uint16Array(total)  // 0 = unlabeled
         const compSizes: number[] = []
 
         for (let i = 0; i < total; i++) {
           if (lumBuf![i] <= strictThresh || labels[i]) continue
           const id = compSizes.length + 1  // 1-indexed
           compSizes.push(0)
+          // Mark seed pixel BEFORE pushing so each pixel enters queue exactly once
+          labels[i] = id
           const queue = [i]
           let head = 0
           while (head < queue.length) {
             const idx = queue[head++]
-            if (labels[idx]) continue
-            labels[idx] = id
             compSizes[id - 1]++
             const r = Math.floor(idx / sW), c = idx % sW
-            if (r > 0      && lumBuf![idx - sW] > strictThresh && !labels[idx - sW]) queue.push(idx - sW)
-            if (r < sH - 1 && lumBuf![idx + sW] > strictThresh && !labels[idx + sW]) queue.push(idx + sW)
-            if (c > 0      && lumBuf![idx - 1]  > strictThresh && !labels[idx - 1])  queue.push(idx - 1)
-            if (c < sW - 1 && lumBuf![idx + 1]  > strictThresh && !labels[idx + 1])  queue.push(idx + 1)
+            // Check-and-mark neighbor before pushing — eliminates duplicates entirely
+            if (r > 0      && !labels[idx - sW] && lumBuf![idx - sW] > strictThresh) { labels[idx - sW] = id; queue.push(idx - sW) }
+            if (r < sH - 1 && !labels[idx + sW] && lumBuf![idx + sW] > strictThresh) { labels[idx + sW] = id; queue.push(idx + sW) }
+            if (c > 0      && !labels[idx - 1]  && lumBuf![idx - 1]  > strictThresh) { labels[idx - 1]  = id; queue.push(idx - 1)  }
+            if (c < sW - 1 && !labels[idx + 1]  && lumBuf![idx + 1]  > strictThresh) { labels[idx + 1]  = id; queue.push(idx + 1)  }
           }
         }
 
@@ -135,8 +137,12 @@ export function useLiveDetection(
           return
         }
 
-        const bestId = compSizes.indexOf(Math.max(...compSizes)) + 1
-        paperCoverage = compSizes[bestId - 1] / total
+        // Use a loop instead of Math.max(...compSizes) — spread crashes with large arrays
+        let bestId = 1, maxSize = 0
+        for (let k = 0; k < compSizes.length; k++) {
+          if (compSizes[k] > maxSize) { maxSize = compSizes[k]; bestId = k + 1 }
+        }
+        paperCoverage = maxSize / total
 
         for (let i = 0; i < total; i++) {
           if (labels[i] !== bestId) continue
@@ -208,30 +214,34 @@ export function useLiveDetection(
 
       // Pass 3b: keep only the largest connected blob — removes sock-logo artifacts
       {
-        const label = new Int32Array(total).fill(-1)
+        const label = new Uint16Array(total)  // 0 = unlabeled
         const blobSizes: number[] = []
         for (let y = iMinY; y <= drawMaxY; y++) {
           for (let x = iMinX; x <= iMaxX; x++) {
             const i = y * sW + x
-            if (!dilatedMask[i] || label[i] >= 0) continue
-            const id = blobSizes.length
+            if (!dilatedMask[i] || label[i]) continue
+            const id = blobSizes.length + 1  // 1-indexed
             blobSizes.push(0)
-            const stack = [i]
-            while (stack.length) {
-              const idx = stack.pop()!
-              if (label[idx] >= 0) continue
-              label[idx] = id
-              blobSizes[id]++
+            label[i] = id  // mark before pushing
+            const queue = [i]
+            let head = 0
+            while (head < queue.length) {
+              const idx = queue[head++]
+              blobSizes[id - 1]++
               const iy = Math.floor(idx / sW), ix = idx % sW
-              if (iy > iMinY && dilatedMask[idx - sW]) stack.push(idx - sW)
-              if (iy < drawMaxY && dilatedMask[idx + sW]) stack.push(idx + sW)
-              if (ix > iMinX && dilatedMask[idx - 1]) stack.push(idx - 1)
-              if (ix < iMaxX && dilatedMask[idx + 1]) stack.push(idx + 1)
+              if (iy > iMinY  && dilatedMask[idx - sW] && !label[idx - sW]) { label[idx - sW] = id; queue.push(idx - sW) }
+              if (iy < drawMaxY && dilatedMask[idx + sW] && !label[idx + sW]) { label[idx + sW] = id; queue.push(idx + sW) }
+              if (ix > iMinX  && dilatedMask[idx - 1]  && !label[idx - 1])  { label[idx - 1]  = id; queue.push(idx - 1)  }
+              if (ix < iMaxX  && dilatedMask[idx + 1]  && !label[idx + 1])  { label[idx + 1]  = id; queue.push(idx + 1)  }
             }
           }
         }
         if (blobSizes.length > 1) {
-          const best = blobSizes.indexOf(Math.max(...blobSizes))
+          // Loop instead of Math.max(...spread) to avoid stack overflow with large arrays
+          let best = 1, bestSize = 0
+          for (let k = 0; k < blobSizes.length; k++) {
+            if (blobSizes[k] > bestSize) { bestSize = blobSizes[k]; best = k + 1 }
+          }
           for (let i = 0; i < total; i++) {
             if (dilatedMask[i] && label[i] !== best) dilatedMask[i] = 0
           }
