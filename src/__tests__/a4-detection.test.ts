@@ -13,12 +13,12 @@ describe('A4 paper detection (SCAN-02)', () => {
   it('A4_ASPECT_RATIO constant equals ~0.707', async () => {
     const mod = await import('@/lib/cv/a4-detection').catch(() => null)
     if (!mod) return // module not yet created
-    expect(mod.A4_ASPECT_RATIO).toBeCloseTo(0.707, 2)
+    expect(mod.A4_ASPECT_RATIO).toBeCloseTo(0.774, 2)  // US Letter 216/279
   })
 
   it('A4_ASPECT_RATIO is approximately 0.707', async () => {
     const mod = await import('@/lib/cv/a4-detection')
-    expect(mod.A4_ASPECT_RATIO).toBeCloseTo(0.707, 2)
+    expect(mod.A4_ASPECT_RATIO).toBeCloseTo(0.774, 2)  // US Letter 216/279
   })
 
   it('sortCornersClockwise is not exported (internal helper)', async () => {

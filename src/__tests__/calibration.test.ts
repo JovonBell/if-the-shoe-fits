@@ -15,9 +15,9 @@ describe('Calibration accuracy indicator (SCAN-10)', () => {
     const pixelsPerMm = 2
     const perfectCorners = [
       { x: 0, y: 0 },
-      { x: 420, y: 0 },
-      { x: 420, y: 594 },
-      { x: 0, y: 594 },
+      { x: 432, y: 0 },
+      { x: 432, y: 558 },
+      { x: 0, y: 558 },
     ]
     const accuracy = mod.computeCalibrationAccuracy(perfectCorners, pixelsPerMm)
     expect(accuracy).toBe(0)

@@ -23,6 +23,7 @@ interface Props {
   latestResult: MeasurementResult
   capturedImageData: ImageData | null
   onScanOtherFoot: () => void
+  onRetake: () => void
   formSubmitted: boolean
   onFormSubmitSuccess: () => void
 }
@@ -32,6 +33,7 @@ export function ResultsStep({
   latestResult,
   capturedImageData,
   onScanOtherFoot,
+  onRetake,
   formSubmitted,
   onFormSubmitSuccess,
 }: Props) {
@@ -58,10 +60,25 @@ export function ResultsStep({
 
   return (
     <div className="flex flex-col gap-8 pb-8">
+      {/* Retake prompt — only shown when estimated flag is set (should be rare now) */}
+      {latestResult.estimated && (
+        <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col gap-3">
+          <p className="font-body font-semibold text-sm text-amber-900">
+            Could not measure your foot accurately
+          </p>
+          <p className="font-body text-xs text-amber-800">
+            {latestResult.confidence_top_penalty}. Please retake with your foot fully on the paper.
+          </p>
+          <Button variant="primary" onClick={onRetake}>
+            Retake Scan
+          </Button>
+        </div>
+      )}
+
       {/* Hero headline */}
       <div className="text-center px-4">
         <h1 className="font-heading text-[28px] font-bold text-dark leading-tight">
-          Your feet are unique — now your shoes will be too
+          {latestResult.estimated ? 'Estimated measurements' : 'Your feet are unique — now your shoes will be too'}
         </h1>
       </div>
 
@@ -88,14 +105,30 @@ export function ResultsStep({
       {/* Accuracy indicator */}
       <div className="px-4 text-center">
         <p className="font-body text-sm text-dark/60">
-          Accuracy: ±{latestResult.accuracy_mm.toFixed(1)}mm ({latestResult.confidence} confidence)
+          Accuracy: ±{(latestResult.accuracy_mm / 25.4).toFixed(3)}in ({latestResult.confidence} confidence)
+        </p>
+        <p className="font-body text-sm text-dark/60">
+          Scan confidence: {latestResult.confidence_score ?? 100}%
+          {' '}({latestResult.confidence} accuracy)
+        </p>
+        <p className="font-body text-xs text-dark/40 mt-1">
+          Includes standard sock correction (+2mm length, +3mm width).{' '}
+          For maximum accuracy, remove socks and rescan.
         </p>
       </div>
 
-      {/* Size recommendation */}
-      <div className="px-4">
-        <SizeRecommendation left={left} right={right} />
-      </div>
+      {/* Size recommendation — only when confidence is acceptable and measurements are real */}
+      {!latestResult.estimated && (latestResult.confidence_score ?? 100) >= 60 && (
+        <div className="px-4">
+          <SizeRecommendation left={left} right={right} />
+        </div>
+      )}
+      {!latestResult.estimated && (latestResult.confidence_score ?? 100) < 60 && (
+        <div className="mx-4 bg-amber-50 border border-amber-200 rounded-xl p-4 font-body text-sm text-amber-900">
+          <p className="font-semibold mb-1">Confidence too low for size recommendation</p>
+          <p className="text-xs text-amber-800">Scan confidence is {latestResult.confidence_score}%. Retake for a size recommendation — try better lighting and ensure all 4 paper corners are visible.</p>
+        </div>
+      )}
 
       {/* CTAs */}
       <div className="px-4 flex flex-col gap-3">

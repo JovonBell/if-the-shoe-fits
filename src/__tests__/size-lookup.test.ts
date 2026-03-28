@@ -15,6 +15,7 @@ function makeMeasurement(length_mm: number): MeasurementResult {
     heel_mm: 35,
     accuracy_mm: 2,
     confidence: 'high',
+    confidence_score: 95,
     calibration_px_per_mm: 2,
     foot_side: 'left',
     captured_at: new Date().toISOString(),

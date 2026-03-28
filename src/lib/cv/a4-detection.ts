@@ -4,10 +4,10 @@
  * Every function that creates Mats manages them in try/finally blocks.
  */
 
-export const A4_ASPECT_RATIO = 210 / 297 // ~0.707
-const A4_WIDTH_MM = 210
-const A4_HEIGHT_MM = 297
-const SCALE = 2 // px per mm → 420×594 output
+export const A4_ASPECT_RATIO = 216 / 279 // ~0.774 — US Letter (8.5×11 in = 216×279 mm)
+const A4_WIDTH_MM = 216
+const A4_HEIGHT_MM = 279
+const SCALE = 2 // px per mm → 432×558 output
 
 // Sorts 4 corners clockwise: top-left, top-right, bottom-right, bottom-left
 function sortCornersClockwise(
@@ -24,8 +24,8 @@ function sortCornersClockwise(
   return [topLeft, topRight, bottomRight, bottomLeft]
 }
 
-// Aspect ratio tolerance: covers both A4 (0.707) and US Letter (0.773)
-const ASPECT_RATIO_TOLERANCE = 0.15
+// Aspect ratio tolerance for US Letter (0.774) — allows up to ~20% deviation for tilted/distorted captures
+const ASPECT_RATIO_TOLERANCE = 0.20
 
 // Try to find a 4-corner quad from contours using approxPolyDP (strict)
 function findBestQuadStrict(
@@ -215,9 +215,36 @@ export function detectA4Corners(
     cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY)
 
     const imageArea = mat.rows * mat.cols
-    const corners = detectViaCanny(cv, gray, imageArea)
+    const rawCorners = detectViaCanny(cv, gray, imageArea)
       ?? detectViaThreshold(cv, gray, imageArea)
-    return corners ? sortCornersClockwise(corners) : null
+    if (!rawCorners) return null
+
+    let corners = sortCornersClockwise(rawCorners)
+
+    // Sub-pixel corner refinement (Upgrade 2)
+    let cornersMat: any
+    try {
+      const CV_32FC2 = cv.CV_32FC2 ?? 13
+      cornersMat = cv.matFromArray(4, 1, CV_32FC2, corners.flatMap(p => [p.x, p.y]))
+      const winSize = new cv.Size(5, 5)
+      const zeroZone = new cv.Size(-1, -1)
+      const criteria = new cv.TermCriteria(3, 30, 0.01) // COUNT+EPS=3, maxIter=30, eps=0.01
+      try {
+        cv.cornerSubPix(gray, cornersMat, winSize, zeroZone, criteria)
+        for (let i = 0; i < 4; i++) {
+          corners[i] = { x: cornersMat.data32F[i * 2], y: cornersMat.data32F[i * 2 + 1] }
+        }
+      } catch {
+        // cornerSubPix may fail if corners are near edge — keep integer corners
+      }
+    } catch {
+      // cornerSubPix not available in this build — keep integer corners
+    } finally {
+      const safeDelete = (m: any) => { try { if (m && !m.isDeleted?.()) m.delete() } catch {} }
+      safeDelete(cornersMat)
+    }
+
+    return corners
   } finally {
     const safeDelete = (m: any) => { try { if (m && !m.isDeleted?.()) m.delete() } catch {} }
     safeDelete(gray)
@@ -225,14 +252,31 @@ export function detectA4Corners(
 }
 
 // Applies getPerspectiveTransform + warpPerspective homography
-// Returns rectified mat (caller must .delete() it) and pixelsPerMm
+// Returns rectified mat (caller must .delete() it) and pixelsPerMm plus independent X/Y scales
 export function applyPerspectiveCorrection(
   cv: any,
   mat: any,
   corners: Array<{ x: number; y: number }>
-): { rectified: any; pixelsPerMm: number } {
-  const A4_W = A4_WIDTH_MM * SCALE  // 420
-  const A4_H = A4_HEIGHT_MM * SCALE // 594
+): { rectified: any; pixelsPerMm: number; scaleX: number; scaleY: number; srcScaleX: number; srcScaleY: number } {
+  const A4_W = A4_WIDTH_MM * SCALE  // 432
+  const A4_H = A4_HEIGHT_MM * SCALE // 558
+
+  // Compute edge lengths of detected quad to derive independent X/Y scales
+  const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+    Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+  const topEdge   = dist(corners[0], corners[1])
+  const botEdge   = dist(corners[3], corners[2])
+  const leftEdge  = dist(corners[0], corners[3])
+  const rightEdge = dist(corners[1], corners[2])
+  const avgHorizEdge = (topEdge + botEdge) / 2
+  const avgVertEdge  = (leftEdge + rightEdge) / 2
+  // srcScaleX/srcScaleY: source px per mm (how many source pixels per mm)
+  const srcScaleX = avgHorizEdge > 0 ? avgHorizEdge / A4_WIDTH_MM : SCALE
+  const srcScaleY = avgVertEdge  > 0 ? avgVertEdge  / A4_HEIGHT_MM : SCALE
+
+  if (srcScaleY > 0 && Math.abs(srcScaleX - srcScaleY) / srcScaleY > 0.05) {
+    console.warn('[CV] Independent X/Y scale mismatch:', srcScaleX.toFixed(3), 'vs', srcScaleY.toFixed(3))
+  }
 
   // CV_32FC2 = 13 (hardcoded — cv.CV_32FC2 may be undefined in some OpenCV.js builds)
   const CV_32FC2 = cv.CV_32FC2 ?? 13
@@ -249,7 +293,7 @@ export function applyPerspectiveCorrection(
   dstPoints.delete()
   M.delete()
 
-  return { rectified, pixelsPerMm: SCALE }
+  return { rectified, pixelsPerMm: SCALE, scaleX: 1 / SCALE, scaleY: 1 / SCALE, srcScaleX, srcScaleY }
 }
 
 // Returns worst-case reprojection error in mm (0 = perfect)

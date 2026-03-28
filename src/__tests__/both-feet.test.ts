@@ -22,6 +22,7 @@ describe('Left/right foot session (SCAN-09)', () => {
       heel_mm: 58,
       accuracy_mm: 1.2,
       confidence: 'high' as const,
+      confidence_score: 95,
       calibration_px_per_mm: 2,
       foot_side: 'left' as const,
       captured_at: new Date().toISOString(),

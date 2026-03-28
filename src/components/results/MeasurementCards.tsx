@@ -6,6 +6,8 @@ interface Props {
   measurements: MeasurementResult
 }
 
+const MM_TO_IN = 1 / 25.4
+
 const MEASUREMENT_LABELS = [
   { key: 'length_mm' as const, label: 'Your length' },
   { key: 'width_mm' as const, label: 'Your width' },
@@ -24,8 +26,8 @@ export function MeasurementCards({ measurements }: Props) {
         >
           <p className="font-body text-sm text-dark/70 font-medium">{label}</p>
           <p className="font-heading text-xl font-bold text-dark mt-1">
-            {measurements[key].toFixed(1)}
-            <span className="text-sm font-normal text-dark/60 ml-1">mm</span>
+            {(measurements[key] * MM_TO_IN).toFixed(2)}
+            <span className="text-sm font-normal text-dark/60 ml-1">in</span>
           </p>
         </div>
       ))}

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCamera } from '@/hooks/useCamera'
+import { useLiveDetection } from '@/hooks/useLiveDetection'
 import { CVWorkerBridge } from '@/lib/cv/worker-bridge'
-import { normalizeOrientation } from '@/lib/cv/exif'
 import { resizeImageData } from '@/lib/cv/camera-constraints'
 import { ScanSession } from '@/lib/cv/session'
 import type { MeasurementResult, FootSide } from '@/lib/cv/types'
@@ -15,6 +15,7 @@ import { ResultsStep } from '@/components/wizard/ResultsStep'
 
 type WizardStep = 'instructions' | 'camera' | 'processing' | 'results'
 
+
 export default function Home() {
   const [step, setStep] = useState<WizardStep>('instructions')
   const [session] = useState(() => new ScanSession())
@@ -23,173 +24,135 @@ export default function Home() {
   const [capturedImageData, setCapturedImageData] = useState<ImageData | null>(null)
   const [cameraError, setCameraError] = useState<{ code: string; message: string } | null>(null)
   const [workerReady, setWorkerReady] = useState(false)
+  const [capturing, setCapturing] = useState(false)
   const [formSubmitted, setFormSubmitted] = useState(false)
 
   const bridgeRef = useRef<CVWorkerBridge | null>(null)
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const { videoRef, startCamera, capturePhoto, stopCamera } = useCamera()
-
-  // Logging helper (console only in production)
-  const addLog = useCallback((msg: string) => {
-    console.log(`[App] ${msg}`)
-  }, [])
+  const { footDetected } = useLiveDetection(videoRef, overlayCanvasRef, step === 'camera', currentSide)
 
   // Initialize CV worker on mount
   useEffect(() => {
-    addLog('Mounting — creating CV worker...')
     try {
       const bridge = new CVWorkerBridge()
       bridgeRef.current = bridge
-      addLog('Worker created OK')
-
       const interval = setInterval(() => {
-        if (bridge.isReady) {
-          setWorkerReady(true)
-          clearInterval(interval)
-          addLog('Worker READY')
-        }
+        if (bridge.isReady) { setWorkerReady(true); clearInterval(interval) }
       }, 100)
-
-      return () => {
-        clearInterval(interval)
-        bridge.terminate()
-      }
+      return () => { clearInterval(interval); bridge.terminate() }
     } catch (err) {
-      addLog(`Worker FAILED: ${err instanceof Error ? err.message : String(err)}`)
+      console.error('[App] CV worker failed:', err)
     }
-  }, [addLog])
+  }, [])
 
-  const handleStart = useCallback(async () => {
-    addLog('handleStart called — switching to camera step')
+  // Start camera when entering camera step; keep it running during processing (avoids stop/restart race on iOS)
+  useEffect(() => {
+    if (step === 'camera') {
+      // Do NOT clear cameraError here — if we're returning from a failed scan the error
+      // message must stay visible so the user knows why capture failed.
+      // cameraError is cleared at the start of handleCapture (on next tap).
+      startCamera().catch((err: unknown) => {
+        const isDenied = err instanceof DOMException && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
+        setCameraError({
+          code: isDenied ? 'CAMERA_DENIED' : 'CAMERA_ERROR',
+          message: isDenied
+            ? 'Camera access is required. Please allow camera access in your browser settings.'
+            : err instanceof Error ? err.message : 'Could not start camera.',
+        })
+      })
+    } else if (step === 'results' || step === 'instructions') {
+      stopCamera()
+    }
+  }, [step, startCamera, stopCamera])
+
+  const handleStart = useCallback(() => {
+    setCameraError(null)
+    setCurrentSide('left')
     setStep('camera')
-    try {
-      addLog('Calling startCamera...')
-      await startCamera()
-      addLog('Camera started OK')
-    } catch (err) {
-      addLog(`Camera error: ${err instanceof Error ? err.message : String(err)}`)
-      const isDenied =
-        err instanceof DOMException &&
-        (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
-      if (isDenied) {
-        setCameraError({
-          code: 'CAMERA_DENIED',
-          message:
-            'Camera access is required. Please allow camera access in your browser settings and refresh.',
-        })
-      } else {
-        setCameraError({
-          code: 'CAMERA_ERROR',
-          message: err instanceof Error ? err.message : 'Could not start camera.',
-        })
-      }
-    }
-  }, [startCamera])
+  }, [])
 
   const handleCapture = useCallback(async () => {
-    if (!bridgeRef.current || !workerReady) return
+    if (!bridgeRef.current || !workerReady) {
+      setCameraError({ code: 'NOT_READY', message: 'Scanner is still initializing — please wait a moment and try again.' })
+      return
+    }
 
-    setStep('processing')
     setCameraError(null)
+    setCapturing(true)
+    setStep('processing')
 
     try {
-      // Step 1: Capture photo from video frame
+      // Capture directly from canvas — no toBlob, no EXIF normalization needed for video frames
       const photoCanvas = capturePhoto()
+      const resizedImageData = resizeImageData(photoCanvas, 1200)
 
-      // Step 2: Convert canvas to Blob for EXIF reading
-      const blob = await new Promise<Blob>((res, rej) =>
-        photoCanvas.toBlob(
-          b => (b ? res(b) : rej(new Error('Canvas toBlob failed'))),
-          'image/jpeg',
-          0.95,
-        ),
-      )
+      // Copy for display (process() may transfer the buffer)
+      const imageCopy = new ImageData(new Uint8ClampedArray(resizedImageData.data), resizedImageData.width, resizedImageData.height)
+      setCapturedImageData(imageCopy)
 
-      // Step 3: Normalize EXIF orientation (Android rotation fix)
-      const normalizedImageData = await normalizeOrientation(blob)
+      // Separate copy for processing
+      const imageData = new ImageData(new Uint8ClampedArray(resizedImageData.data), resizedImageData.width, resizedImageData.height)
 
-      // Step 4: Resize to max 1200px (prevents 10-30s processing on 48MP shots)
-      const tempCanvas = document.createElement('canvas')
-      tempCanvas.width = normalizedImageData.width
-      tempCanvas.height = normalizedImageData.height
-      tempCanvas.getContext('2d')!.putImageData(normalizedImageData, 0, 0)
-      const resizedImageData = resizeImageData(tempCanvas, 1200)
+      const scanResult = await bridgeRef.current.process(imageData, currentSide)
 
-      // Step 5: Store a COPY before transferring — transferable makes original unusable
-      const imageDataCopy = new ImageData(
-        new Uint8ClampedArray(resizedImageData.data),
-        resizedImageData.width,
-        resizedImageData.height,
-      )
-      setCapturedImageData(imageDataCopy)
-
-      // Step 6: Send to worker (buffer is transferred — zero-copy)
-      const scanResult = await bridgeRef.current.process(resizedImageData, currentSide)
-
-      if (scanResult.success) {
-        session.setResult(currentSide, scanResult.data)
-        setLatestResult(scanResult.data)
-        stopCamera() // CRITICAL: stop camera LED before transitioning to results
-        setStep('results')
-      } else {
-        const errorMessages: Record<string, string> = {
-          A4_NOT_DETECTED:
-            'Paper not found. Make sure your A4 paper is fully visible and on a dark surface.',
-          FOOT_NOT_DETECTED:
-            'Foot not found. Ensure your whole foot is on the paper with good lighting.',
-          POOR_LIGHTING: 'Poor lighting detected. Move to a brighter area and try again.',
-          CALIBRATION_FAILED:
-            'Calibration failed. Make sure the entire A4 paper is in frame.',
+      if (!scanResult.success) {
+        const messages: Record<string, string> = {
+          A4_NOT_DETECTED: 'Paper not found. Place your US Letter paper on a dark surface with all 4 corners clearly visible.',
+          FOOT_NOT_DETECTED: 'Foot not found. Make sure your foot covers most of the paper with the heel at the bottom edge.',
+          INVALID_MEASUREMENTS: scanResult.error.message,
+          CV_ERROR: 'Processing failed. Please try again.',
         }
-        const message =
-          errorMessages[scanResult.error.code] ?? 'Something went wrong. Please retake the photo.'
-        setCameraError({ code: scanResult.error.code, message })
+        setCameraError({
+          code: scanResult.error.code,
+          message: messages[scanResult.error.code] ?? scanResult.error.message,
+        })
+        setCapturing(false)
         setStep('camera')
+        return
       }
-    } catch {
-      setCameraError({
-        code: 'CV_ERROR',
-        message: 'Something went wrong. Please retake the photo.',
-      })
+
+      session.setResult(currentSide, scanResult.data)
+      setLatestResult(scanResult.data)
+      setStep('results')
+    } catch (err) {
+      console.error('[App] Capture error:', err)
+      setCameraError({ code: 'CV_ERROR', message: 'Something went wrong. Please try again.' })
       setStep('camera')
     }
-  }, [workerReady, capturePhoto, currentSide, session, stopCamera])
+    setCapturing(false)
+  }, [workerReady, capturePhoto, currentSide, session])
 
-  const handleScanOtherFoot = useCallback(async () => {
+  const handleRetake = useCallback(() => {
+    setLatestResult(null)
+    setCapturedImageData(null)
+    setCameraError(null)
+    setCapturing(false)
+    setStep('camera')
+  }, [])
+
+  const handleScanOtherFoot = useCallback(() => {
     const otherSide: FootSide = currentSide === 'left' ? 'right' : 'left'
     setCurrentSide(otherSide)
     setLatestResult(null)
     setCapturedImageData(null)
+    setCameraError(null)
+    setCapturing(false)
     setStep('camera')
-    try {
-      await startCamera()
-    } catch (err) {
-      const isDenied =
-        err instanceof DOMException &&
-        (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
-      if (isDenied) {
-        setCameraError({
-          code: 'CAMERA_DENIED',
-          message:
-            'Camera access is required. Please allow camera access in your browser settings and refresh.',
-        })
-      } else {
-        setCameraError({
-          code: 'CAMERA_ERROR',
-          message: err instanceof Error ? err.message : 'Could not start camera.',
-        })
-      }
-    }
-  }, [currentSide, startCamera])
+  }, [currentSide])
 
   return (
     <main className="min-h-dvh bg-cream flex flex-col font-body text-dark">
       <StepIndicator currentStep={step} />
-
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-y-auto">
         {step === 'instructions' && <InstructionsStep onStart={handleStart} />}
         {step === 'camera' && (
           <CameraStep
             videoRef={videoRef}
+            overlayCanvasRef={overlayCanvasRef}
+            footDetected={footDetected}
+            workerReady={workerReady}
+            capturing={capturing}
             side={currentSide}
             onCapture={handleCapture}
             error={cameraError}
@@ -202,6 +165,7 @@ export default function Home() {
             latestResult={latestResult}
             capturedImageData={capturedImageData}
             onScanOtherFoot={handleScanOtherFoot}
+            onRetake={handleRetake}
             formSubmitted={formSubmitted}
             onFormSubmitSuccess={() => setFormSubmitted(true)}
           />

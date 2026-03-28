@@ -17,12 +17,15 @@ export interface MeasurementResult {
   heel_mm: number
   accuracy_mm: number
   confidence: 'high' | 'medium' | 'low'
+  confidence_score: number  // 0-100
+  confidence_top_penalty?: string  // reason for main deduction
   contour_points?: Array<{ x: number; y: number }>
   landmarks?: FootLandmarks
   paper_corners?: Array<{ x: number; y: number }>
   calibration_px_per_mm: number
   foot_side: FootSide
-  captured_at: string  // ISO timestamp
+  captured_at: string
+  estimated?: boolean  // true when foot contour not found — measurements are population averages
 }
 
 export type ScanErrorCode =
@@ -30,6 +33,7 @@ export type ScanErrorCode =
   | 'FOOT_NOT_DETECTED'
   | 'POOR_LIGHTING'
   | 'CALIBRATION_FAILED'
+  | 'INVALID_MEASUREMENTS'
   | 'CV_ERROR'
 
 export interface ScanError {

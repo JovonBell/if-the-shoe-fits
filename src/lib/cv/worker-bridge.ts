@@ -52,7 +52,19 @@ export class CVWorkerBridge {
 
     return new Promise<ScanResult>((resolve, reject) => {
       const id = crypto.randomUUID()
-      this.pending.set(id, { resolve, reject })
+
+      // 30-second timeout — guards against hung WASM on iOS Safari
+      const timer = setTimeout(() => {
+        if (this.pending.has(id)) {
+          this.pending.delete(id)
+          reject(new Error('CV processing timed out — please try again'))
+        }
+      }, 30_000)
+
+      this.pending.set(id, {
+        resolve: (r) => { clearTimeout(timer); resolve(r) },
+        reject:  (e) => { clearTimeout(timer); reject(e) },
+      })
 
       // TRANSFERABLE: imageData.data.buffer is transferred to worker (zero-copy)
       // imageData is UNUSABLE on main thread after this line

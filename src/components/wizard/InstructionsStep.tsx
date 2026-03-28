@@ -29,7 +29,7 @@ function WarningIcon() {
   )
 }
 
-// A4 sheet with corner marks icon — maroon line art
+// US Letter sheet with corner marks icon — maroon line art
 function A4Icon() {
   return (
     <svg
@@ -58,8 +58,8 @@ function A4Icon() {
   )
 }
 
-// Foot outline on paper icon — maroon line art
-function FootIcon() {
+// Two feet side by side (heels at bottom, toes up) on portrait paper
+function TwoFeetIcon() {
   return (
     <svg
       width={32}
@@ -73,10 +73,12 @@ function FootIcon() {
       className="text-maroon"
       aria-hidden="true"
     >
-      {/* Paper base */}
-      <rect x="2" y="16" width="20" height="6" rx="1" />
-      {/* Foot outline */}
-      <path d="M8 16 C8 16 7 10 9 8 C10 6 12 6 13 7 C14 8 14 10 13 11 L16 11 C17 11 18 12 18 13 C18 14 17 15 16 15 L9 16 Z" />
+      {/* Paper outline (portrait) */}
+      <rect x="2" y="1" width="20" height="22" rx="1" />
+      {/* Left foot — heel at bottom, toes up */}
+      <path d="M6 19 C6 19 5 14 6 11 C7 9 8 9 8.5 10 C9 11 9 13 8.5 14 L10 14 C10.5 14 11 14.5 11 15 C11 15.5 10.5 16 10 16 L7 19 Z" />
+      {/* Right foot — heel at bottom, toes up (mirrored) */}
+      <path d="M18 19 C18 19 19 14 18 11 C17 9 16 9 15.5 10 C15 11 15 13 15.5 14 L14 14 C13.5 14 13 14.5 13 15 C13 15.5 13.5 16 14 16 L17 19 Z" />
     </svg>
   )
 }
@@ -107,6 +109,27 @@ function PhoneDownIcon() {
   )
 }
 
+// "No" / prohibited icon for the warning card
+function NoIcon() {
+  return (
+    <svg
+      width={32}
+      height={32}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-amber-600"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+    </svg>
+  )
+}
+
 export function InstructionsStep({ onStart }: InstructionsStepProps) {
   return (
     <div className="flex flex-col gap-4 pb-8">
@@ -115,28 +138,28 @@ export function InstructionsStep({ onStart }: InstructionsStepProps) {
         variant="warning"
         icon={<WarningIcon />}
         title="Dark surface required"
-        description="Place your A4 paper on a dark floor, carpet, or surface."
+        description="Place your US Letter paper on a dark floor, carpet, or surface."
       />
 
-      {/* Card 2 — A4 paper placement */}
+      {/* Card 2 — US Letter paper placement */}
       <StepCard
         icon={<A4Icon />}
-        title="Place your A4 paper"
-        description="Lay a standard A4 sheet flat. The full page must be visible."
+        title="Place your US Letter paper"
+        description="Lay an 8.5×11 in sheet portrait (tall side up) on a dark surface. Keep all 4 corners visible."
       />
 
-      {/* Card 3 — Foot placement */}
+      {/* Card 3 — One foot at a time */}
       <StepCard
-        icon={<FootIcon />}
-        title="Place your foot on the paper"
-        description="Stand with your heel at the bottom edge. Keep your weight even."
+        icon={<TwoFeetIcon />}
+        title="One foot at a time"
+        description="Place your foot with the heel touching the bottom edge of the paper and toes pointing up. You'll scan your left foot first, then your right."
       />
 
       {/* Card 4 — Camera overhead */}
       <StepCard
         icon={<PhoneDownIcon />}
         title="Hold camera overhead"
-        description="Point your camera straight down. Fill the frame with paper and foot."
+        description="Point your camera straight down. Fill the frame with your foot and all 4 corners of the paper."
       />
 
       {/* Primary CTA */}
